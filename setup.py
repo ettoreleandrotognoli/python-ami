@@ -15,7 +15,7 @@ def read(file_name):
 requirements = []
 
 setup(
-    name="My App",
+    name="asterisk ami",
     version=".".join(map(str, __version__)),
     description="Python AMI Client",
     long_description=read('README.rst'),
