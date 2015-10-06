@@ -21,7 +21,7 @@ setup(
     description="Python AMI Client",
     long_description=read('README.rst'),
     url='http://programandonoaquario.com.br',
-    download_url='https://github.com/ettoreleandrotognoli/python-ami/%s/' % str_version,
+    download_url='https://github.com/ettoreleandrotognoli/python-ami/tree/%s/' % str_version,
     license='UNDEFINDED',
     author=u'Éttore Leandro Tognoli',
     author_email='ettore.leandro.tognoli@gmail.com',
