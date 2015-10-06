@@ -22,7 +22,7 @@ setup(
     long_description=read('README.rst'),
     url='https://github.com/ettoreleandrotognoli/python-ami/',
     download_url='https://github.com/ettoreleandrotognoli/python-ami/tree/%s/' % str_version,
-    license='UNDEFINDED',
+    license='BSD',
     author=u'Éttore Leandro Tognoli',
     author_email='ettore.leandro.tognoli@gmail.com',
     packages=find_packages(exclude=['tests']),
