@@ -13,13 +13,15 @@ def read(file_name):
 
 
 requirements = []
+str_version = ".".join(map(str, __version__))
 
 setup(
-    name="asterisk ami",
-    version=".".join(map(str, __version__)),
+    name="asterisk-ami",
+    version=str_version,
     description="Python AMI Client",
     long_description=read('README.rst'),
     url='http://programandonoaquario.com.br',
+    download_url='https://github.com/ettoreleandrotognoli/python-ami/%s/' % str_version,
     license='UNDEFINDED',
     author=u'Éttore Leandro Tognoli',
     author_email='ettore.leandro.tognoli@gmail.com',
@@ -29,6 +31,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
-    install_requires=requirements,
-    tests_require=[],
+    # install_requires=requirements,
+    # tests_require=[],
 )
