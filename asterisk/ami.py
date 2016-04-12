@@ -41,7 +41,6 @@ class Response(object):
 
     @staticmethod
     def read(response):
-        print response
         lines = str(response).splitlines()
         (key, value) = lines[0].split(": ", 1)
         if not key.lower() == 'response':
@@ -99,7 +98,6 @@ class Event(object):
 
     @staticmethod
     def read(event):
-        print event
         lines = str(event).splitlines()
         (key, value) = lines[0].split(': ', 1)
         if not key.lower() == 'event':
