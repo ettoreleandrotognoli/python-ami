@@ -47,7 +47,7 @@ class Response(object):
             raise Exception()
         status = value
         keys = {}
-        for ii in range(1, len(lines)):
+        for i in range(1, len(lines)):
             try:
                 (key, value) = lines[i].split(": ", 1)
                 keys[key] = value
