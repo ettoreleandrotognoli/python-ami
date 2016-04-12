@@ -41,15 +41,19 @@ class Response(object):
 
     @staticmethod
     def read(response):
+        print response
         lines = str(response).splitlines()
         (key, value) = lines[0].split(": ", 1)
         if not key.lower() == 'response':
             raise Exception()
         status = value
         keys = {}
-        for i in range(1, len(lines)):
-            (key, value) = lines[i].split(": ", 1)
-            keys[key] = value
+        for ii in range(1, len(lines)):
+            try:
+                (key, value) = lines[i].split(": ", 1)
+                keys[key] = value
+            except:
+                pass
         return Response(status, keys)
 
     @staticmethod
@@ -95,6 +99,7 @@ class Event(object):
 
     @staticmethod
     def read(event):
+        print event
         lines = str(event).splitlines()
         (key, value) = lines[0].split(': ', 1)
         if not key.lower() == 'event':
@@ -102,8 +107,11 @@ class Event(object):
         name = value
         keys = {}
         for i in range(1, len(lines)):
-            (key, value) = lines[i].split(': ', 1)
-            keys[key] = value
+            try:
+                (key, value) = lines[i].split(': ', 1)
+                keys[key] = value
+            except:
+                pass
         return Event(name, keys)
 
     @staticmethod
