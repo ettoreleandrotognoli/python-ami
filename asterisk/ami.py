@@ -203,11 +203,14 @@ class AMIClient(object):
             data = self.socket.recv(self.buffer_size)
             if not data:
                 continue
-            pack += data
-            if not (pack.endswith("\r\n\r\n") or pack.endswith("\n\n")):
-                continue
-            self.fire_recv_pack(pack)
-            pack = ""
+            for l in data.split("\r\n"):
+                line = l.strip()
+                if len(line) > 0:
+                    pack += line + "\n"
+                if len(line) == 0:
+                    if len(pack) > 0:
+                        self.fire_recv_pack(pack)
+                    pack = ""
         self.socket.close()
 
     def fire_recv_reponse(self, response):
@@ -226,10 +229,6 @@ class AMIClient(object):
             listener(event=event, source=self)
 
     def fire_recv_pack(self, pack):
-        if pack.endswith('\r\n\r\n'):
-            pack = pack[0: - 4]
-        if pack.endswith('\n\n'):
-            pack = pack[0:- 2]
         if Response.match(pack):
             response = Response.read(pack)
             self.fire_recv_reponse(response)
