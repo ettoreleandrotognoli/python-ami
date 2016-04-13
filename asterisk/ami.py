@@ -202,9 +202,10 @@ class AMIClient(object):
                 self._on = False
                 continue
             data += recv
-            while self.asterisk_line_regex.search(data):
+            if self.asterisk_line_regex.search(data):
                 (pack, data) = self.asterisk_line_regex.split(data, 1)
                 yield pack
+                break
         while self._on:
             recv = self.socket.recv(self.buffer_size)
             if recv == '':
