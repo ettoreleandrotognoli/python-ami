@@ -142,11 +142,13 @@ class LogoffAction(Action):
 class AMIClient(object):
     action_counter = 0
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
+    asterisk_line_regex = re.compile('\r?\n', re.IGNORECASE | re.MULTILINE)
+    asterisk_pack_regex = re.compile('\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
     _futures = {}
     _event_listeners = []
 
-    def __init__(self, address, port, buffer_size=1025):
+    def __init__(self, address, port, buffer_size=2 ** 10):
         self.listeners = []
         self.address = address
         self.buffer_size = buffer_size
@@ -192,23 +194,37 @@ class AMIClient(object):
     def send(self, pack):
         self.socket.send(str(pack) + "\r\n")
 
+    def _next_pack(self):
+        data = ''
+        while self._on:
+            recv = self.socket.recv(self.buffer_size)
+            if recv == '':
+                self._on = False
+                continue
+            data += recv
+            while self.asterisk_line_regex.search(data):
+                (pack, data) = self.asterisk_line_regex.split(data, 1)
+                yield pack
+        while self._on:
+            recv = self.socket.recv(self.buffer_size)
+            if recv == '':
+                self._on = False
+                continue
+            data += recv
+            while self.asterisk_pack_regex.search(data):
+                (pack, data) = self.asterisk_pack_regex.split(data, 1)
+                yield pack
+        self.socket.close()
+
     def listen(self):
-        asterisk_start = self.socket.recv(self.buffer_size)
+        pack_generator = self._next_pack()
+        asterisk_start = pack_generator.next()
         match = AMIClient.asterisk_start_regex.match(asterisk_start)
         if not match:
             raise Exception()
         self.ami_version = match.group('version')
-        pack = ""
-        while self._on:
-            data = self.socket.recv(self.buffer_size)
-            if not data:
-                continue
-            pack += data
-            if not (pack.endswith("\r\n\r\n") or pack.endswith("\n\n")):
-                continue
+        for pack in self._next_pack():
             self.fire_recv_pack(pack)
-            pack = ""
-        self.socket.close()
 
     def fire_recv_reponse(self, response):
         if response.status.lower() == 'goodbye':
@@ -226,10 +242,6 @@ class AMIClient(object):
             listener(event=event, source=self)
 
     def fire_recv_pack(self, pack):
-        if pack.endswith('\r\n\r\n'):
-            pack = pack[0: - 4]
-        if pack.endswith('\n\n'):
-            pack = pack[0:- 2]
         if Response.match(pack):
             response = Response.read(pack)
             self.fire_recv_reponse(response)
