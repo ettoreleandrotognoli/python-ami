@@ -47,36 +47,50 @@ class Response(object):
             raise Exception()
         status = value
         keys = {}
-        for i in range(1, len(lines)):
+        follows = [] if status.lower() == 'follows' else None
+        for line in lines[1:]:
             try:
-                (key, value) = lines[i].split(": ", 1)
+                (key, value) = line.split(": ", 1)
                 keys[key] = value
             except:
-                pass
-        return Response(status, keys)
+                if follows is not None:
+                    follows.append(line)
+        return Response(status, keys, follows)
 
     @staticmethod
     def match(response):
         return bool(Response.match_regex.match(str(response)))
 
-    def __init__(self, status, keys):
+    def __init__(self, status, keys={}, fallows=None):
         self.status = status
         self.keys = keys
+        self.follows = fallows
 
     def __str__(self):
         package = "Response: %s\r\n" % self.status
         for key in self.keys:
             package += "%s: %s\r\n" % (key, self.keys[key])
+        if self.follows is not None and len(self.follows) > 0:
+            package += "\r\n".join(self.follows) + "\r\n"
         return package
+
+    def is_error(self):
+        return self.status.lower() == 'error'
 
 
 class FutureResponse(object):
-    def __init__(self, timeout=None):
-        self.timeout = timeout
+    def __init__(self, callback=None, timeout=None):
+        self._timeout = timeout
         self._response = None
         self._lock = threading.Condition()
+        self._callback = callback
 
     def set_response(self, response):
+        try:
+            if self._callback is not None:
+                self._callback(response)
+        except Exception as ex:
+            print ex
         self._lock.acquire()
         self._response = response
         self._lock.notifyAll()
@@ -86,7 +100,7 @@ class FutureResponse(object):
         if self._response is not None:
             return self._response
         self._lock.acquire()
-        self._lock.wait(self.timeout)
+        self._lock.wait(self._timeout)
         self._lock.release()
         return self._response
 
@@ -148,15 +162,16 @@ class AMIClient(object):
     _futures = {}
     _event_listeners = []
 
-    def __init__(self, address, port, buffer_size=2 ** 10):
+    def __init__(self, address, port=5038, timeout=1000, buffer_size=2 ** 10):
         self.listeners = []
         self.address = address
         self.buffer_size = buffer_size
         self.port = port
-        self.socket = None
+        self._socket = None
         self._thread = None
         self._on = False
         self.ami_version = None
+        self.timeout = timeout
 
     def next_action_id(self):
         id = self.action_counter
@@ -164,40 +179,47 @@ class AMIClient(object):
         return str(id)
 
     def connect(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.address, self.port))
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.connect((self.address, self.port))
         self._on = True
         self._thread = threading.Thread(target=self.listen)
         self._thread.start()
 
-    def login(self, username, secret):
+    def disconnect(self):
+        self._on = False
+        try:
+            self._thread.join()
+        except:
+            pass
+
+    def login(self, username, secret, callback=None):
         if not self._on:
             self.connect()
-        return self.send_action(LoginAction(username, secret))
+        return self.send_action(LoginAction(username, secret), callback)
 
-    def logoff(self):
+    def logoff(self, callback=None):
         if not self._on:
             return
-        return self.send_action(LogoffAction())
+        return self.send_action(LogoffAction(), callback)
 
-    def send_action(self, action):
+    def send_action(self, action, callback):
         if 'ActionID' not in action.keys:
             action_id = self.next_action_id()
             action.keys['ActionID'] = action_id
         else:
             action_id = action.keys['ActionID']
-        future = FutureResponse()
+        future = FutureResponse(callback, self.timeout)
         self._futures[action_id] = future
         self.send(action)
         return future
 
     def send(self, pack):
-        self.socket.send(str(pack) + "\r\n")
+        self._socket.send(str(pack) + "\r\n")
 
     def _next_pack(self):
         data = ''
         while self._on:
-            recv = self.socket.recv(self.buffer_size)
+            recv = self._socket.recv(self.buffer_size)
             if recv == '':
                 self._on = False
                 continue
@@ -207,15 +229,15 @@ class AMIClient(object):
                 yield pack
                 break
         while self._on:
-            recv = self.socket.recv(self.buffer_size)
+            while self.asterisk_pack_regex.search(data):
+                (pack, data) = self.asterisk_pack_regex.split(data, 1)
+                yield pack
+            recv = self._socket.recv(self.buffer_size)
             if recv == '':
                 self._on = False
                 continue
             data += recv
-            while self.asterisk_pack_regex.search(data):
-                (pack, data) = self.asterisk_pack_regex.split(data, 1)
-                yield pack
-        self.socket.close()
+        self._socket.close()
 
     def listen(self):
         pack_generator = self._next_pack()
@@ -224,8 +246,12 @@ class AMIClient(object):
         if not match:
             raise Exception()
         self.ami_version = match.group('version')
-        for pack in self._next_pack():
-            self.fire_recv_pack(pack)
+        try:
+            while self._on:
+                pack = pack_generator.next()
+                self.fire_recv_pack(pack)
+        except Exception as ex:
+            print ex
 
     def fire_recv_reponse(self, response):
         if response.status.lower() == 'goodbye':
@@ -261,10 +287,10 @@ class AMIClientAdapter(object):
     def __init__(self, ami_client):
         self._ami_client = ami_client
 
-    def _action(self, name, variables={}, **kwargs):
+    def _action(self, name, _callback=None, variables={}, **kwargs):
         action = Action(name, kwargs)
         action.variables = variables
-        return self._ami_client.send_action(action)
+        return self._ami_client.send_action(action, _callback)
 
     def __getattr__(self, item):
         return partial(self._action, item)
