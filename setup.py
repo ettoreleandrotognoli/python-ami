@@ -25,7 +25,7 @@ setup(
     license='BSD',
     author=u'Éttore Leandro Tognoli',
     author_email='ettore.leandro.tognoli@gmail.com',
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests','examples']),
     include_package_data=True,
     keywords=['asterisk', 'ami'],
     classifiers=[
