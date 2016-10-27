@@ -294,3 +294,47 @@ class AMIClientAdapter(object):
 
     def __getattr__(self, item):
         return partial(self._action, item)
+
+
+class EventListener(object):
+    def __init__(self, white_list=None, black_list=[], on_event=None):
+        self.white_list = white_list
+        self.black_list = black_list
+        if on_event is None:
+            self.on_event = self._on_event
+        else:
+            self.on_event = on_event
+
+    def check_white_list(self, event_name):
+        if self.white_list is None:
+            return True
+        for rule in self.white_list:
+            if isinstance(rule, basestring) and event_name == rule:
+                return True
+            if isinstance(rule, re._pattern_type) and rule.match(event_name) is not None:
+                return True
+        return False
+
+    def check_black_list(self, event_name):
+        for rule in self.black_list:
+            if isinstance(rule, basestring) and event_name == rule:
+                return False
+            if isinstance(rule, re._pattern_type) and rule.match(event_name) is None:
+                return False
+        return True
+
+    def check_event(self, event_name):
+        if self.check_white_list(event_name) and self.check_black_list(event_name):
+            return True
+        return False
+
+    def __call__(self, **kwargs):
+        event_name = kwargs['event'].name
+        if self.check_event(event_name):
+            return self.on_event(**kwargs)
+        return None
+
+    def _on_event(self, **kwargs):
+        event_name = kwargs['event'].name
+        method_name = 'on_%s' % event_name
+        return getattr(self, method_name, lambda *args, **ks: None)(**kwargs)
