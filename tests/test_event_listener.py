@@ -13,13 +13,13 @@ class WhiteListTest(unittest.TestCase):
         event_listener = ami.EventListener(white_list=None)
         for i in xrange(samples_to_test):
             event_name = "".join(sample(letters, event_name_size))
-            self.assertTrue(event_listener.check_event(event_name))
+            self.assertTrue(event_listener.check_event_name(event_name))
 
     def test_empty_white_list(self):
         event_listener = ami.EventListener(white_list=[])
         for i in xrange(samples_to_test):
             event_name = "".join(sample(letters, event_name_size))
-            self.assertFalse(event_listener.check_event(event_name))
+            self.assertFalse(event_listener.check_event_name(event_name))
 
     def test_string_white_list(self):
         string_rules = list(set(["".join(sample(letters, event_name_size)) for i in xrange(samples_to_test)]))
@@ -27,18 +27,18 @@ class WhiteListTest(unittest.TestCase):
         out_white_list = string_rules[len(string_rules) / 2:]
         event_listener = ami.EventListener(white_list=in_white_list)
         for rule in in_white_list:
-            self.assertTrue(event_listener.check_event(rule))
+            self.assertTrue(event_listener.check_event_name(rule))
         for rule in out_white_list:
-            self.assertFalse(event_listener.check_event(rule))
+            self.assertFalse(event_listener.check_event_name(rule))
 
     def test_regex_white_list(self):
         events = list(set(["".join(sample(letters, event_name_size)) for i in xrange(samples_to_test)]))
         all_event_listener = ami.EventListener(white_list=re.compile('.*'))
         for event_name in events:
-            self.assertTrue(all_event_listener.check_event(event_name))
+            self.assertTrue(all_event_listener.check_event_name(event_name))
         none_event_listener = ami.EventListener(white_list=[re.compile('[0-9]+')])
         for event_name in events:
-            self.assertFalse(none_event_listener.check_event(event_name))
+            self.assertFalse(none_event_listener.check_event_name(event_name))
 
 
 class BlackListTest(unittest.TestCase):
@@ -46,7 +46,7 @@ class BlackListTest(unittest.TestCase):
         event_listener = ami.EventListener(black_list=[])
         for i in xrange(samples_to_test):
             event_name = sample(letters, event_name_size)
-            self.assertTrue(event_listener.check_event(event_name))
+            self.assertTrue(event_listener.check_event_name(event_name))
 
     def test_string_black_list(self):
         string_rules = list(set(["".join(sample(letters, event_name_size)) for i in xrange(samples_to_test)]))
@@ -54,23 +54,23 @@ class BlackListTest(unittest.TestCase):
         out_black_list = string_rules[len(string_rules) / 2:]
         event_listener = ami.EventListener(black_list=in_black_list)
         for rule in in_black_list:
-            self.assertFalse(event_listener.check_event(rule))
+            self.assertFalse(event_listener.check_event_name(rule))
         for rule in out_black_list:
-            self.assertTrue(event_listener.check_event(rule))
+            self.assertTrue(event_listener.check_event_name(rule))
 
     def test_regex_black_list(self):
         events = list(set(["".join(sample(letters, event_name_size)) for i in xrange(samples_to_test)]))
         none_event_listener = ami.EventListener(black_list=re.compile('.*'))
         for event_name in events:
-            self.assertFalse(none_event_listener.check_event(event_name))
+            self.assertFalse(none_event_listener.check_event_name(event_name))
         all_event_listener = ami.EventListener(black_list=[re.compile('[0-9]+')])
         for event_name in events:
-            self.assertTrue(all_event_listener.check_event(event_name))
+            self.assertTrue(all_event_listener.check_event_name(event_name))
 
 
 class EventListenerTest(unittest.TestCase):
-    def build_some_event(self):
-        return ami.Event('SomeEvent', {})
+    def build_some_event(self, **kwargs):
+        return ami.Event('SomeEvent', kwargs)
 
     def receive_event(self, event, **kwargs):
         self.assertIsInstance(event, ami.Event)
@@ -89,3 +89,11 @@ class EventListenerTest(unittest.TestCase):
         event_listener = SomeEventListener()
         result = event_listener(event=self.build_some_event(), source=self)
         self.assertTrue(result)
+
+    def test_attr_filter(self):
+        event_listener = ami.EventListener(on_event=self.receive_event, Value1='teste')
+        self.assertIsNone(event_listener(event=self.build_some_event(Value1='null')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='teste')))
+        event_listener = ami.EventListener(on_event=self.receive_event, Value1=re.compile('^t.*'))
+        self.assertIsNone(event_listener(event=self.build_some_event(Value1='null')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='teste')))

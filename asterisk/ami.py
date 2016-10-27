@@ -297,9 +297,10 @@ class AMIClientAdapter(object):
 
 
 class EventListener(object):
-    def __init__(self, white_list=None, black_list=[], on_event=None):
+    def __init__(self, white_list=None, black_list=[], on_event=None, **kwargs):
         self.white_list = [white_list] if isinstance(white_list, (basestring, re._pattern_type)) else white_list
         self.black_list = [black_list] if isinstance(black_list, (basestring, re._pattern_type)) else black_list
+        self.assert_attrs = kwargs
         if on_event is None:
             self.on_event = self._on_event
         else:
@@ -323,15 +324,28 @@ class EventListener(object):
                 return False
         return True
 
-    def check_event(self, event_name):
-        if self.check_white_list(event_name) and self.check_black_list(event_name):
+    def check_attributes(self, event_keys):
+        for k, v in self.assert_attrs.items():
+            if k not in event_keys:
+                continue
+            value = event_keys[k]
+            if isinstance(v, basestring) and v != value:
+                return False
+            if isinstance(v, re._pattern_type) and v.match(value) is None:
+                return False
+        return True
+
+    def check_event_name(self, event_name):
+        return self.check_white_list(event_name) and self.check_black_list(event_name)
+
+    def check_event(self, event):
+        if self.check_event_name(event.name) and self.check_attributes(event.keys):
             return True
         return False
 
-    def __call__(self, **kwargs):
-        event_name = kwargs['event'].name
-        if self.check_event(event_name):
-            return self.on_event(**kwargs)
+    def __call__(self, event, **kwargs):
+        if self.check_event(event):
+            return self.on_event(event=event, **kwargs)
         return None
 
     def _on_event(self, **kwargs):
