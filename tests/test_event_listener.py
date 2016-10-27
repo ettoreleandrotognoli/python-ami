@@ -1,4 +1,5 @@
 import unittest
+import re
 from random import sample
 from asterisk import ami
 
@@ -30,6 +31,15 @@ class WhiteListTest(unittest.TestCase):
         for rule in out_white_list:
             self.assertFalse(event_listener.check_event(rule))
 
+    def test_regex_white_list(self):
+        events = list(set(["".join(sample(letters, event_name_size)) for i in xrange(samples_to_test)]))
+        all_event_listener = ami.EventListener(white_list=[re.compile('.*')])
+        for event_name in events:
+            self.assertTrue(all_event_listener.check_event(event_name))
+        none_event_listener = ami.EventListener(white_list=[re.compile('[0-9]+')])
+        for event_name in events:
+            self.assertFalse(none_event_listener.check_event(event_name))
+
 
 class BlackListTest(unittest.TestCase):
     def test_empty_black_list(self):
@@ -47,3 +57,6 @@ class BlackListTest(unittest.TestCase):
             self.assertFalse(event_listener.check_event(rule))
         for rule in out_black_list:
             self.assertTrue(event_listener.check_event(rule))
+
+    def test_regex_black_list(self):
+        pass
