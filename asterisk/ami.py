@@ -300,6 +300,9 @@ class EventListener(object):
     def __init__(self, white_list=None, black_list=[], on_event=None, **kwargs):
         self.white_list = [white_list] if isinstance(white_list, (basestring, re._pattern_type)) else white_list
         self.black_list = [black_list] if isinstance(black_list, (basestring, re._pattern_type)) else black_list
+        for k in kwargs.keys():
+            if k.startswith('on_'):
+                setattr(self, k, kwargs.pop(k))
         self.assert_attrs = kwargs
         if on_event is None:
             self.on_event = self._on_event
