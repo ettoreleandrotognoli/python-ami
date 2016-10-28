@@ -4,6 +4,19 @@ import socket
 import threading
 from functools import partial
 
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
+
 
 class Action(object):
     def __init__(self, name, keys={}, variables={}):
@@ -90,7 +103,7 @@ class FutureResponse(object):
             if self._callback is not None:
                 self._callback(response)
         except Exception as ex:
-            print ex
+            print(ex)
         self._lock.acquire()
         self._response = response
         self._lock.notifyAll()
@@ -251,7 +264,7 @@ class AMIClient(object):
                 pack = pack_generator.next()
                 self.fire_recv_pack(pack)
         except Exception as ex:
-            print ex
+            print(ex)
 
     def fire_recv_reponse(self, response):
         if response.status.lower() == 'goodbye':
@@ -300,7 +313,7 @@ class EventListener(object):
     def __init__(self, white_list=None, black_list=[], on_event=None, **kwargs):
         self.white_list = [white_list] if isinstance(white_list, (basestring, re._pattern_type)) else white_list
         self.black_list = [black_list] if isinstance(black_list, (basestring, re._pattern_type)) else black_list
-        for k in kwargs.keys():
+        for k in list(kwargs.keys()):
             if k.startswith('on_'):
                 setattr(self, k, kwargs.pop(k))
         self.assert_attrs = kwargs
