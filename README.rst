@@ -10,13 +10,13 @@ Install
 
 Install asterisk-ami
 
-::
+.. code-block:: shell
 
     pip install asterisk-ami
 
 Install latest asterisk-ami
 
-::
+.. code-block:: shell
 
     pip install git+https://github.com/ettoreleandrotognoli/python-ami
 
@@ -26,7 +26,7 @@ Usage
 Connect
 ~~~~~~~
 
-::
+.. code-block:: python
 
     from asterisk.ami import AMIClient
     
@@ -36,7 +36,7 @@ Connect
 Disconnect
 ~~~~~~~~~~
 
-::
+.. code-block:: python
 
     client.logoff()
 
@@ -44,7 +44,7 @@ Disconnect
 Send an action
 ~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     from asterisk.ami import SimpleAction
     
@@ -62,7 +62,7 @@ Send an action
 Send an action with adapter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     from asterisk.ami import AMIClientAdapter
     
@@ -78,7 +78,7 @@ Send an action with adapter
 Synchronous Response
 ~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     #without adapter
     future = client.send_action(action)
@@ -92,7 +92,7 @@ Synchronous Response
 Asynchronous Response
 ~~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     def callback_response(response):
         print(response)
@@ -109,7 +109,7 @@ Asynchronous Response
 Listen Events
 ~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     def event_listener(event,**kwargs):
         print(event)
@@ -122,7 +122,7 @@ Filter Events
 
 With a custom class
 
-::
+.. code-block:: python
 
     from asterisk.ami import EventListener
 
@@ -142,7 +142,7 @@ With a custom class
 
 With black or white list
 
-::
+.. code-block:: python
 
     def event_listener(event,**kwargs):
         print(event)
@@ -157,7 +157,7 @@ With black or white list
             
 Like a custom class
 
-::
+.. code-block:: python
 
     def event_listener(event,**kwargs):
         print(event)
@@ -174,7 +174,7 @@ Like a custom class
 Filter Event Value
 ~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     def event_listener(event,**kwargs):
         print('Ringing',event)
@@ -192,7 +192,7 @@ Filter Event Value
 Filter with regex
 ~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     import re
     
@@ -203,7 +203,7 @@ Filter with regex
         EventListener(
             on_Newstate=event_listener,
             white_list=re.compile('.*'),
-            ChannelStateDesc=re.compile('^Ring.*'),            
+            ChannelStateDesc=re.compile('^Ring.*'),
         )
     )
     
