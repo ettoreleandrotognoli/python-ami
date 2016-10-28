@@ -2,6 +2,9 @@
 Python AMI Client
 =================
 
+.. image:: https://travis-ci.org/ettoreleandrotognoli/python-ami.svg?branch=master
+    :target: https://travis-ci.org/ettoreleandrotognoli/python-ami
+
 .. image:: https://codecov.io/gh/ettoreleandrotognoli/python-ami/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/ettoreleandrotognoli/python-ami
 
