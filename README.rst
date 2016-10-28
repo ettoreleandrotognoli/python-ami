@@ -2,6 +2,9 @@
 Python AMI Client
 =================
 
+.. image:: https://codecov.io/gh/ettoreleandrotognoli/python-ami/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/ettoreleandrotognoli/python-ami
+
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
 

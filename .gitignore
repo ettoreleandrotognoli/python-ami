@@ -3,6 +3,7 @@ venv/
 dist/
 build/
 htmlcov/
+coverage.xml
 *.py[co]
 \.*
 !.gitignore
