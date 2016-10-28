@@ -201,7 +201,7 @@ Filter with regex
         
     client.add_event_listener(
         EventListener(
-            on_Newstatet=event_listener,
+            on_Newstate=event_listener,
             white_list=re.compile('.*'),
             ChannelStateDesc=re.compile('^Ring.*'),            
         )

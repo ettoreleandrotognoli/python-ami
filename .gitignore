@@ -2,6 +2,7 @@
 venv/
 dist/
 build/
+htmlcov/
 *.py[co]
 \.*
 !.gitignore
