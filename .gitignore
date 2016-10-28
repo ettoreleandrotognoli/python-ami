@@ -1,7 +1,7 @@
-# Created by .ignore support plugin (hsz.mobi)
 *.egg-info
 venv/
 dist/
+build/
 *.py[co]
 \.*
 !.gitignore
