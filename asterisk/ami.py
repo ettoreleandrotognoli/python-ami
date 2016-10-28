@@ -227,12 +227,12 @@ class AMIClient(object):
         return future
 
     def send(self, pack):
-        self._socket.send(str(pack) + "\r\n")
+        self._socket.send(bytearray(str(pack) + "\r\n", 'utf-8'))
 
     def _next_pack(self):
         data = ''
         while self._on:
-            recv = self._socket.recv(self.buffer_size)
+            recv = self._socket.recv(self.buffer_size).decode('utf-8')
             if recv == '':
                 self._on = False
                 continue
@@ -245,7 +245,7 @@ class AMIClient(object):
             while self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
                 yield pack
-            recv = self._socket.recv(self.buffer_size)
+            recv = self._socket.recv(self.buffer_size).decode('utf-8')
             if recv == '':
                 self._on = False
                 continue
@@ -254,14 +254,14 @@ class AMIClient(object):
 
     def listen(self):
         pack_generator = self._next_pack()
-        asterisk_start = pack_generator.next()
+        asterisk_start = next(pack_generator)
         match = AMIClient.asterisk_start_regex.match(asterisk_start)
         if not match:
             raise Exception()
         self.ami_version = match.group('version')
         try:
             while self._on:
-                pack = pack_generator.next()
+                pack = next(pack_generator)
                 self.fire_recv_pack(pack)
         except Exception as ex:
             print(ex)
