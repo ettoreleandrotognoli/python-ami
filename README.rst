@@ -169,3 +169,42 @@ Like a custom class
     client.add_event_listener(
         EventListener(on_event=event_listener)
     )
+    
+
+Filter Event Value
+~~~~~~~~~~~~~~~~~~
+
+::
+
+    def event_listener(event,**kwargs):
+        print('Ringing',event)
+        
+    
+    client.add_event_listener(
+        EventListener(
+            on_event=event_listener,
+            white_list='Newstate',
+            ChannelStateDesc='Ringing',
+            ConnectedLineNum='2004',
+        )
+    )
+    
+Filter with regex
+~~~~~~~~~~~~~~~~~
+
+::
+
+    import re
+    
+    def event_listener(event,**kwargs):
+        print(event)
+        
+    client.add_event_listener(
+        EventListener(
+            on_Newstatet=event_listener,
+            white_list=re.compile('.*'),
+            ChannelStateDesc=re.compile('^Ring.*'),            
+        )
+    )
+    
+    
