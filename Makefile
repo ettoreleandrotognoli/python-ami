@@ -1,5 +1,8 @@
 test:
-	python -m unittest discover -p "test_*.py"
+	python -m unittest discover -s "tests/unit" -p "test_*.py"
+
+test-all:
+	python -m unittest discover -s "tests/" -p "test_*.py"
 
 coverage:
 	coverage run -m unittest discover -p "test_*.py"
