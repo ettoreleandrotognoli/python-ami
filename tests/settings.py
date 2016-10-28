@@ -5,5 +5,5 @@ connection = {
 
 login = {
     'username': 'admin',
-    'secret': 'password'
+    'secret': 'tecnosuper12'
 }
