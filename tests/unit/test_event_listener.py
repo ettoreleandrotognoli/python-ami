@@ -81,6 +81,17 @@ class EventListenerTest(unittest.TestCase):
         result = event_listener(event=self.build_some_event(), source=self)
         self.assertTrue(result)
 
+    def test_custom_on_event(self):
+        class CustomOnEvent(ami.EventListener):
+            def on_event(self, **kwargs):
+                return True
+
+        custom_on_event = CustomOnEvent()
+        self.assertTrue(custom_on_event(event=self.build_some_event(), source=self))
+
+        custom_on_event = CustomOnEvent(on_event=lambda *args, **kwargs: False)
+        self.assertFalse(custom_on_event(event=self.build_some_event(), source=self))
+
     def test_on_some_event(self):
         event_listener = ami.EventListener(on_SomeEvent=self.receive_event)
         result = event_listener(event=self.build_some_event(), source=self)
