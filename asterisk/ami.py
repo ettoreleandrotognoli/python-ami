@@ -328,7 +328,7 @@ class EventListener(object):
         for rule in self.white_list:
             if isinstance(rule, basestring) and event_name == rule:
                 return True
-            if isinstance(rule, re._pattern_type) and rule.match(event_name) is not None:
+            if isinstance(rule, re._pattern_type) and rule.search(event_name) is not None:
                 return True
         return False
 
@@ -340,14 +340,22 @@ class EventListener(object):
                 return False
         return True
 
+    def check_attribute(self, rules, value):
+        if isinstance(rules, (re._pattern_type, basestring)):
+            rules = [rules]
+        for rule in rules:
+            if isinstance(rule, basestring) and rule == value:
+                return True
+            if isinstance(rule, re._pattern_type) and rule.search(value):
+                return True
+        return False
+
     def check_attributes(self, event_keys):
-        for k, v in self.assert_attrs.items():
+        for k, rule in self.assert_attrs.items():
             if k not in event_keys:
                 continue
             value = event_keys[k]
-            if isinstance(v, basestring) and v != value:
-                return False
-            if isinstance(v, re._pattern_type) and v.match(value) is None:
+            if self.check_attribute(rule, value) is False:
                 return False
         return True
 
