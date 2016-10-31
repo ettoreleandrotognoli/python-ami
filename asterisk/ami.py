@@ -318,7 +318,7 @@ class EventListener(object):
                 setattr(self, k, kwargs.pop(k))
         self.assert_attrs = kwargs
         if on_event is None:
-            self.on_event = self._on_event
+            self.on_event = getattr(self, 'on_event', self._on_event)
         else:
             self.on_event = on_event
 
