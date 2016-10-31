@@ -113,3 +113,13 @@ class EventListenerTest(unittest.TestCase):
         event_listener = ami.EventListener(on_event=self.receive_event, Value1=re.compile('^t.*'))
         self.assertIsNone(event_listener(event=self.build_some_event(Value1='null')))
         self.assertTrue(event_listener(event=self.build_some_event(Value1='teste')))
+
+    def test_multiple_attr_filter(self):
+        event_listener = ami.EventListener(on_event=self.receive_event, Value1=['teste', 'None'])
+        self.assertIsNone(event_listener(event=self.build_some_event(Value1='null')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='teste')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='None')))
+        event_listener = ami.EventListener(on_event=self.receive_event, Value1=[re.compile('^t.*'), re.compile('a')])
+        self.assertIsNone(event_listener(event=self.build_some_event(Value1='null')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='teste')))
+        self.assertTrue(event_listener(event=self.build_some_event(Value1='__a__')))
