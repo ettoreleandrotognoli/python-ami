@@ -19,6 +19,6 @@ public-test:
 
 clean:
 	rm -f $(shell find . -name "*.pyc")
-	rm -rf coverage.xml .coverage
+	rm -rf htmlcov/ coverage.xml .coverage
 	rm -rf dist/ build/
 	rm -rf *.egg-info
