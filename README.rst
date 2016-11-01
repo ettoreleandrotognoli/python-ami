@@ -75,7 +75,7 @@ Send an action with adapter
 
     from asterisk.ami import AMIClientAdapter
     
-    adapater = AMIClientAdapter(client)
+    adapter = AMIClientAdapter(client)
     adapter.Originate(
         Channel='SIP/2010',
         Exten='2010',
