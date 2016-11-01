@@ -289,9 +289,11 @@ class AMIClient(object):
             event = Event.read(pack)
             self.fire_recv_event(event)
 
-    def add_event_listener(self, event_listener, **kwargs):
-        if len(kwargs) > 0 and not isinstance(event_listener, EventListener):
-            event_listener = EventListener(on_event=event_listener, **kwargs)
+    def add_event_listener(self, on_event=None, **kwargs):
+        if len(kwargs) > 0 and not isinstance(on_event, EventListener):
+            event_listener = EventListener(on_event=on_event, **kwargs)
+        else:
+            event_listener = on_event
         self._event_listeners.append(event_listener)
         return event_listener
 
@@ -313,7 +315,7 @@ class AMIClientAdapter(object):
 
 
 class EventListener(object):
-    def __init__(self, white_list=None, black_list=[], on_event=None, **kwargs):
+    def __init__(self, on_event=None, white_list=None, black_list=[], **kwargs):
         self.white_list = [white_list] if isinstance(white_list, (basestring, re._pattern_type)) else white_list
         self.black_list = [black_list] if isinstance(black_list, (basestring, re._pattern_type)) else black_list
         for k in list(kwargs.keys()):
