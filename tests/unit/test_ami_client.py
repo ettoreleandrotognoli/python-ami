@@ -10,8 +10,8 @@ class AMIClientTest(unittest.TestCase):
     def setUp(self):
         self.client = ami.AMIClient(**connection)
 
-    def build_event(self, **kwargs):
-        return ami.Event('SomeEvent', kwargs)
+    def build_event(self, event='SomeEvent', **kwargs):
+        return ami.Event(event, kwargs)
 
     def test_add_event_listener(self):
         def event_listener(event, **kwargs):
@@ -33,3 +33,20 @@ class AMIClientTest(unittest.TestCase):
         self.client.add_event_listener(event_listener, white_list='SomeEvent')
         self.client.fire_recv_event(self.build_event())
         self.assertIsNotNone(self.event)
+
+    registry_event = None
+    varset_event = None
+
+    def test_add_custom_on_event(self):
+        def on_varset(event, **kwargs):
+            self.varset_event = event
+
+        def on_registry(event, **kwargs):
+            self.registry_event = event
+
+        self.client.add_event_listener(on_VarSet=on_varset, on_Registry=on_registry)
+        self.client.fire_recv_event(self.build_event('VarSet'))
+        self.assertIsNotNone(self.varset_event)
+        self.assertIsNone(self.registry_event)
+        self.client.fire_recv_event(self.build_event('Registry'))
+        self.assertIsNotNone(self.registry_event)
