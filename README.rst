@@ -3,13 +3,13 @@ Python AMI Client
 =================
 
 .. image:: https://travis-ci.org/ettoreleandrotognoli/python-ami.svg?branch=master
-    :target: https://travis-ci.org/ettoreleandrotognoli/python-ami
+:target: https://travis-ci.org/ettoreleandrotognoli/python-ami
 
 .. image:: https://codecov.io/gh/ettoreleandrotognoli/python-ami/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/ettoreleandrotognoli/python-ami
+:target: https://codecov.io/gh/ettoreleandrotognoli/python-ami
 
 .. image:: https://badge.fury.io/py/asterisk-ami.svg
-    :target: https://badge.fury.io/py/asterisk-ami
+:target: https://badge.fury.io/py/asterisk-ami
 
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
@@ -157,11 +157,11 @@ With black or white list
         print(event)
         
     client.add_event_listener(
-        EventListener(white_list=['Registry','PeerStatus'])
+        event_listener, white_list=['Registry','PeerStatus']
     )
     
     client.add_event_listener(
-        EventListener(black_list=['VarSet'])
+        event_listener, black_list=['VarSet']
     )
             
 Like a custom class
@@ -172,11 +172,12 @@ Like a custom class
         print(event)
         
     client.add_event_listener(
-        EventListener(on_VarSet=event_listener,on_ExtensionStatus=event_listener)
+        on_VarSet=event_listener,
+        on_ExtensionStatus=event_listener
     )
     
     client.add_event_listener(
-        EventListener(on_event=event_listener)
+        on_event=event_listener
     )
     
 
@@ -190,12 +191,10 @@ Filter Event Value
         
     
     client.add_event_listener(
-        EventListener(
-            on_event=event_listener,
-            white_list='Newstate',
-            ChannelStateDesc='Ringing',
-            ConnectedLineNum='2004',
-        )
+        event_listener,
+        white_list='Newstate',
+        ChannelStateDesc='Ringing',
+        ConnectedLineNum='2004',
     )
     
 Filter with regex
@@ -209,11 +208,9 @@ Filter with regex
         print(event)
         
     client.add_event_listener(
-        EventListener(
-            on_Newstate=event_listener,
-            white_list=re.compile('.*'),
-            ChannelStateDesc=re.compile('^Ring.*'),
-        )
+        on_Newstate=event_listener,
+        white_list=re.compile('.*'),
+        ChannelStateDesc=re.compile('^Ring.*'),
     )
     
     
