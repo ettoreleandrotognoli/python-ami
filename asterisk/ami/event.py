@@ -1,5 +1,18 @@
 import re
 
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
+
 
 class Event(object):
     match_regex = re.compile('^Event: .*', re.IGNORECASE)
