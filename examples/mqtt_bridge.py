@@ -5,8 +5,11 @@ requirements:
 import json
 import platform
 import time
+
 import paho.mqtt.client as mqtt
-from asterisk.ami import EventListener, AMIClient, SimpleAction
+
+from asterisk.ami import EventListener, AMIClient, AutoReconnect
+from asterisk.ami.action import SimpleAction
 from settings import connection, login
 
 brokers = ['test-mosquitto.org', 'iot.eclipse.org']
@@ -56,6 +59,7 @@ class MqttAmiBridge(EventListener):
 
 mqtt_client = mqtt.Client()
 ami_client = AMIClient(**connection)
+AutoReconnect(ami_client)
 bridge = MqttAmiBridge('%s/%s' % (hostname, 'asterisk-ami'), mqtt_client, ami_client)
 
 mqtt_client.on_message = bridge.mqtt_on_message
