@@ -1,6 +1,5 @@
 import re
 import socket
-import time
 import threading
 from functools import partial
 
@@ -23,7 +22,7 @@ class AMIClient(object):
         self._port = port
         self._socket = None
         self._thread = None
-        self._on = False
+        self.finished = None
         self._ami_version = None
         self._timeout = timeout
 
@@ -35,24 +34,24 @@ class AMIClient(object):
     def connect(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((self._address, self._port))
-        self._on = True
+        self.finished = threading.Event()
         self._thread = threading.Thread(target=self.listen)
         self._thread.start()
 
     def disconnect(self):
-        self._on = False
+        self.finished.set()
         try:
             self._thread.join()
         except:
             pass
 
     def login(self, username, secret, callback=None):
-        if not self._on:
+        if self.finished is None or self.finished.is_set():
             self.connect()
         return self.send_action(LoginAction(username, secret), callback)
 
     def logoff(self, callback=None):
-        if not self._on:
+        if self.finished is None or self.finished.is_set():
             return
         return self.send_action(LogoffAction(), callback)
 
@@ -72,23 +71,23 @@ class AMIClient(object):
 
     def _next_pack(self):
         data = ''
-        while self._on:
+        while not self.finished.is_set():
             recv = self._socket.recv(self._buffer_size).decode('utf-8')
             if recv == '':
-                self._on = False
+                self.finished.set()
                 continue
             data += recv
             if self.asterisk_line_regex.search(data):
                 (pack, data) = self.asterisk_line_regex.split(data, 1)
                 yield pack
                 break
-        while self._on:
+        while not self.finished.is_set():
             while self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
                 yield pack
             recv = self._socket.recv(self._buffer_size).decode('utf-8')
             if recv == '':
-                self._on = False
+                self.finished.set()
                 continue
             data += recv
         self._socket.close()
@@ -101,7 +100,7 @@ class AMIClient(object):
             raise Exception()
         self._ami_version = match.group('version')
         try:
-            while self._on:
+            while not self.finished.is_set():
                 pack = next(pack_generator)
                 self.fire_recv_pack(pack)
         except Exception as ex:
@@ -109,7 +108,7 @@ class AMIClient(object):
 
     def fire_recv_reponse(self, response):
         if response.status.lower() == 'goodbye':
-            self._on = False
+            self.finished.set()
         if 'ActionID' not in response.keys:
             return
         action_id = response.keys['ActionID']
@@ -162,7 +161,7 @@ class AutoReconnect(threading.Thread):
         self.on_reconnect = on_reconnect
         self.on_disconnect = on_disconnect
         self.delay = delay
-        self._on = False
+        self.finished = None
         self._ami_client = ami_client
         self._login_args = None
         self._login = None
@@ -185,7 +184,7 @@ class AutoReconnect(threading.Thread):
         def on_login(response, *a, **k):
             if not response.is_error():
                 if self._login_args is None:
-                    self._on = True
+                    self.finished = threading.Event()
                     self.start()
                 self._login_args = (args, kwargs)
             if callback is not None:
@@ -195,7 +194,7 @@ class AutoReconnect(threading.Thread):
         return self._login(*args, **kwargs)
 
     def _logoff_wrapper(self, *args, **kwargs):
-        self._on = False
+        self.finished.set()
         self._rollback_client()
         return self._logoff(*args, **kwargs)
 
@@ -222,11 +221,11 @@ class AutoReconnect(threading.Thread):
         return False
 
     def run(self):
-        time.sleep(self.delay)
-        while self._on:
+        self.finished.wait(self.delay)
+        while not self.finished.is_set():
             if not self.ping():
                 self.try_reconnect()
-            time.sleep(self.delay)
+            self.finished.wait(self.delay)
 
     def __del__(self):
         self._rollback_client()
