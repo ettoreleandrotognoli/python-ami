@@ -5,11 +5,11 @@ class Action(object):
         self.variables = variables
 
     def __str__(self):
-        package = "Action: %s\r\n" % self.name
+        package = 'Action: %s\r\n' % self.name
         for key in self.keys:
-            package += "%s: %s\r\n" % (key, self.keys[key])
+            package += '%s: %s\r\n' % (key, self.keys[key])
         for var in self.variables:
-            package += "Variable: %s=%s\r\n" % (var, self.variables[var])
+            package += 'Variable: %s=%s\r\n' % (var, self.variables[var])
         return package
 
     def __getattr__(self, item):

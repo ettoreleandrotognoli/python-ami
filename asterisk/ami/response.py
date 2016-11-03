@@ -8,7 +8,7 @@ class Response(object):
     @staticmethod
     def read(response):
         lines = str(response).splitlines()
-        (key, value) = lines[0].split(": ", 1)
+        (key, value) = lines[0].split(': ', 1)
         if not key.lower() == 'response':
             raise Exception()
         status = value
@@ -16,7 +16,7 @@ class Response(object):
         follows = [] if status.lower() == 'follows' else None
         for line in lines[1:]:
             try:
-                (key, value) = line.split(": ", 1)
+                (key, value) = line.split(': ', 1)
                 keys[key] = value
             except:
                 if follows is not None:
@@ -33,11 +33,11 @@ class Response(object):
         self.follows = fallows
 
     def __str__(self):
-        package = "Response: %s\r\n" % self.status
+        package = 'Response: %s\r\n' % self.status
         for key in self.keys:
-            package += "%s: %s\r\n" % (key, self.keys[key])
+            package += '%s: %s\r\n' % (key, self.keys[key])
         if self.follows is not None and len(self.follows) > 0:
-            package += "\r\n".join(self.follows) + "\r\n"
+            package += '\r\n'.join(self.follows) + '\r\n'
         return package
 
     def is_error(self):

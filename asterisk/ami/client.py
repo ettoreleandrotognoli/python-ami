@@ -1,11 +1,11 @@
 import re
 import socket
-from functools import partial
 import threading
+from functools import partial
 
-from .action import *
-from .response import *
-from .event import *
+from .action import Action, LoginAction, LogoffAction
+from .event import Event, EventListener
+from .response import Response, FutureResponse
 
 
 class AMIClient(object):
@@ -67,7 +67,7 @@ class AMIClient(object):
         return future
 
     def send(self, pack):
-        self._socket.send(bytearray(str(pack) + "\r\n", 'utf-8'))
+        self._socket.send(bytearray(str(pack) + '\r\n', 'utf-8'))
 
     def _next_pack(self):
         data = ''
