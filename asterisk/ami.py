@@ -172,19 +172,17 @@ class AMIClient(object):
     asterisk_line_regex = re.compile('\r?\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile('\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
-    _futures = {}
-    _event_listeners = []
-
     def __init__(self, address, port=5038, timeout=1000, buffer_size=2 ** 10):
-        self.listeners = []
-        self.address = address
-        self.buffer_size = buffer_size
-        self.port = port
+        self._futures = {}
+        self._event_listeners = []
+        self._address = address
+        self._buffer_size = buffer_size
+        self._port = port
         self._socket = None
         self._thread = None
         self._on = False
-        self.ami_version = None
-        self.timeout = timeout
+        self._ami_version = None
+        self._timeout = timeout
 
     def next_action_id(self):
         id = self.action_counter
@@ -193,7 +191,7 @@ class AMIClient(object):
 
     def connect(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((self.address, self.port))
+        self._socket.connect((self._address, self._port))
         self._on = True
         self._thread = threading.Thread(target=self.listen)
         self._thread.start()
@@ -221,7 +219,7 @@ class AMIClient(object):
             action.keys['ActionID'] = action_id
         else:
             action_id = action.keys['ActionID']
-        future = FutureResponse(callback, self.timeout)
+        future = FutureResponse(callback, self._timeout)
         self._futures[action_id] = future
         self.send(action)
         return future
@@ -232,7 +230,7 @@ class AMIClient(object):
     def _next_pack(self):
         data = ''
         while self._on:
-            recv = self._socket.recv(self.buffer_size).decode('utf-8')
+            recv = self._socket.recv(self._buffer_size).decode('utf-8')
             if recv == '':
                 self._on = False
                 continue
@@ -245,7 +243,7 @@ class AMIClient(object):
             while self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
                 yield pack
-            recv = self._socket.recv(self.buffer_size).decode('utf-8')
+            recv = self._socket.recv(self._buffer_size).decode('utf-8')
             if recv == '':
                 self._on = False
                 continue
@@ -258,7 +256,7 @@ class AMIClient(object):
         match = AMIClient.asterisk_start_regex.match(asterisk_start)
         if not match:
             raise Exception()
-        self.ami_version = match.group('version')
+        self._ami_version = match.group('version')
         try:
             while self._on:
                 pack = next(pack_generator)
