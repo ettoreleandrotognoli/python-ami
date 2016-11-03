@@ -167,12 +167,12 @@ class LogoffAction(Action):
 
 
 class AMIClient(object):
-    action_counter = 0
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
     asterisk_line_regex = re.compile('\r?\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile('\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address, port=5038, timeout=1000, buffer_size=2 ** 10):
+        self._action_counter = 0
         self._futures = {}
         self._event_listeners = []
         self._address = address
@@ -185,8 +185,8 @@ class AMIClient(object):
         self._timeout = timeout
 
     def next_action_id(self):
-        id = self.action_counter
-        self.action_counter += 1
+        id = self._action_counter
+        self._action_counter += 1
         return str(id)
 
     def connect(self):

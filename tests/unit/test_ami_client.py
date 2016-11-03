@@ -21,14 +21,14 @@ class AMIClientTest(unittest.TestCase):
         self.client.fire_recv_event(self.build_event())
         self.assertIsNotNone(self.event)
         self.client.remove_event_listener(event_listener)
-        self.assertEquals(len(self.client.listeners), 0)
+        self.assertEquals(len(self.client._event_listeners), 0)
 
         self.event = None
         listener = self.client.add_event_listener(event_listener, white_list='OtherEvent')
         self.client.fire_recv_event(self.build_event())
         self.assertIsNone(self.event)
         self.client.remove_event_listener(listener)
-        self.assertEquals(len(self.client.listeners), 0)
+        self.assertEquals(len(self.client._event_listeners), 0)
 
         self.client.add_event_listener(event_listener, white_list='SomeEvent')
         self.client.fire_recv_event(self.build_event())
