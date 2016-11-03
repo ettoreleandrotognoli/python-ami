@@ -179,7 +179,7 @@ class AutoReconnect(threading.Thread):
         self._ami_client.logoff = self._logoff
 
     def _login_wrapper(self, *args, **kwargs):
-        callback = kwargs.pop('callback')
+        callback = kwargs.pop('callback', None) or (lambda *a, **k: None)
 
         def on_login(response, *a, **k):
             if not response.is_error():
@@ -187,8 +187,7 @@ class AutoReconnect(threading.Thread):
                     self.finished = threading.Event()
                     self.start()
                 self._login_args = (args, kwargs)
-            if callback is not None:
-                callback(response, *a, **k)
+            callback(response, *a, **k)
 
         kwargs['callback'] = on_login
         return self._login(*args, **kwargs)
