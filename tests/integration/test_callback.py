@@ -34,9 +34,9 @@ class CallbackTest(unittest.TestCase):
         self.assertIsNone(self.response)
         f = adapter.Originate(
             Channel='SIP/2010',
-            Exten='2010',
+            Exten='*65',
             Priority=1,
-            Context='default',
+            Context='from-internal',
             CallerID='python',
             _callback=self.callback_response
         )
