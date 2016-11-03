@@ -38,6 +38,7 @@ class CallbackTest(unittest.TestCase):
             Priority=1,
             Context='from-internal',
             CallerID='python',
+            Async=True,
             _callback=self.callback_response
         )
         f.get_response()
