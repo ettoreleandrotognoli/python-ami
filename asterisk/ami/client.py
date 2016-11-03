@@ -1,5 +1,6 @@
 import re
 import socket
+import time
 import threading
 from functools import partial
 
@@ -13,7 +14,7 @@ class AMIClient(object):
     asterisk_line_regex = re.compile('\r?\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile('\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
-    def __init__(self, address, port=5038, timeout=1000, buffer_size=2 ** 10):
+    def __init__(self, address, port=5038, timeout=3, buffer_size=2 ** 10):
         self._action_counter = 0
         self._futures = {}
         self._event_listeners = []
@@ -55,7 +56,7 @@ class AMIClient(object):
             return
         return self.send_action(LogoffAction(), callback)
 
-    def send_action(self, action, callback):
+    def send_action(self, action, callback=None):
         if 'ActionID' not in action.keys:
             action_id = self.next_action_id()
             action.keys['ActionID'] = action_id
@@ -152,3 +153,80 @@ class AMIClientAdapter(object):
 
     def __getattr__(self, item):
         return partial(self._action, item)
+
+
+class AutoReconnect(threading.Thread):
+    def __init__(self, ami_client, delay=0.5,
+                 on_disconnect=lambda *args: None, on_reconnect=lambda *args: None):
+        super(AutoReconnect, self).__init__()
+        self.on_reconnect = on_reconnect
+        self.on_disconnect = on_disconnect
+        self.delay = delay
+        self._on = False
+        self._ami_client = ami_client
+        self._login_args = None
+        self._login = None
+        self._logoff = None
+        self._prepare_client()
+
+    def _prepare_client(self):
+        self._login = self._ami_client.login
+        self._logoff = self._ami_client.logoff
+        self._ami_client.login = self._login_wrapper
+        self._ami_client.logoff = self._logoff_wrapper
+
+    def _rollback_client(self):
+        self._ami_client.login = self._login
+        self._ami_client.logoff = self._logoff
+
+    def _login_wrapper(self, *args, **kwargs):
+        callback = kwargs.pop('callback')
+
+        def on_login(response, *a, **k):
+            if not response.is_error():
+                if self._login_args is None:
+                    self._on = True
+                    self.start()
+                self._login_args = (args, kwargs)
+            if callback is not None:
+                callback(response, *a, **k)
+
+        kwargs['callback'] = on_login
+        return self._login(*args, **kwargs)
+
+    def _logoff_wrapper(self, *args, **kwargs):
+        self._on = False
+        self._rollback_client()
+        return self._logoff(*args, **kwargs)
+
+    def ping(self):
+        try:
+            f = self._ami_client.send_action(Action('Ping'))
+            response = f.response
+            if response is not None and not response.is_error():
+                return True
+            self.on_disconnect(self._ami_client, response)
+        except Exception as ex:
+            self.on_disconnect(self._ami_client, ex)
+        return False
+
+    def try_reconnect(self):
+        try:
+            f = self._login(*self._login_args[0], **self._login_args[1])
+            response = f.response
+            if response is not None and not response.is_error():
+                self.on_reconnect(self._ami_client, response)
+                return True
+        except:
+            pass
+        return False
+
+    def run(self):
+        time.sleep(self.delay)
+        while self._on:
+            if not self.ping():
+                self.try_reconnect()
+            time.sleep(self.delay)
+
+    def __del__(self):
+        self._rollback_client()
