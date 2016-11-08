@@ -36,6 +36,7 @@ class AMIClient(object):
         self._socket.connect((self._address, self._port))
         self.finished = threading.Event()
         self._thread = threading.Thread(target=self.listen)
+        self._thread.daemon = True
         self._thread.start()
 
     def disconnect(self):
