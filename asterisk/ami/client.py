@@ -10,8 +10,8 @@ from .response import Response, FutureResponse
 
 class AMIClient(object):
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
-    asterisk_line_regex = re.compile('\r?\n', re.IGNORECASE | re.MULTILINE)
-    asterisk_pack_regex = re.compile('\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
+    asterisk_line_regex = re.compile(b'\r?\n', re.IGNORECASE | re.MULTILINE)
+    asterisk_pack_regex = re.compile(b'\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address, port=5038, timeout=3, buffer_size=2 ** 10):
         self._action_counter = 0
@@ -71,23 +71,23 @@ class AMIClient(object):
         self._socket.send(bytearray(str(pack) + '\r\n', 'utf-8'))
 
     def _next_pack(self):
-        data = ''
+        data = b''
         while not self.finished.is_set():
-            recv = self._socket.recv(self._buffer_size).decode('utf-8')
-            if recv == '':
+            recv = self._socket.recv(self._buffer_size)
+            if recv == b'':
                 self.finished.set()
                 continue
             data += recv
             if self.asterisk_line_regex.search(data):
                 (pack, data) = self.asterisk_line_regex.split(data, 1)
-                yield pack
+                yield pack.decode('utf-8')
                 break
         while not self.finished.is_set():
             while self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
-                yield pack
-            recv = self._socket.recv(self._buffer_size).decode('utf-8')
-            if recv == '':
+                yield pack.decode('utf-8')
+            recv = self._socket.recv(self._buffer_size)
+            if recv == b'':
                 self.finished.set()
                 continue
             data += recv
