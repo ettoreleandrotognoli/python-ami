@@ -28,6 +28,10 @@ class Event(object):
         for i in range(1, len(lines)):
             try:
                 (key, value) = lines[i].split(': ', 1)
+                if key in ('ChanVariable', 'DestChanVariable'):
+                    key_prefix = 'Dest_' if key == 'DestChanVariable' else ''
+                    key, value = value.split('=',1)
+                    key = key_prefix + key
                 keys[key] = value
             except:
                 pass
