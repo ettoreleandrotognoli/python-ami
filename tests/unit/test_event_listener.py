@@ -127,27 +127,44 @@ class EventListenerTest(unittest.TestCase):
 
 class MultipleChannelVariablesTestCase(unittest.TestCase):
 
-    def test_multiple_channel_variables(self):
+    def test_event_with_multiple_channel_variables(self):
 
-        VAR1 = 'VAR1'
-        VAR2 = 'VAR2'
-        DEST_VAR1 = 'DEST_VAR1'
-        DEST_VAR2 = 'DEST_VAR2'
+        channel_variable = {
+            'VAR1': 'VAR1',
+            'VAR2': 'VAR2'
+        }
+
+        dest_channel_vasiable = {
+            'VAR1': 'D_VAR1',
+            'VAR2': 'D_VAR2'
+        }
+
 
         ami_data = '\n'.join([
             "Event: AgentCalled",
-            "ChanVariable: VAR1=%s" % VAR1,
-            "ChanVariable: VAR2=%s" % VAR2,
-            "DestChanVariable: VAR1=%s" % DEST_VAR1,
-            "DestChanVariable: VAR2=%s" % DEST_VAR2,
+            "ChanVariable: VAR1=%(VAR1)s" % channel_variable,
+            "ChanVariable: VAR2=%(VAR2)s" % channel_variable,
+            "DestChanVariable: VAR1=%(VAR1)s" % dest_channel_vasiable,
+            "DestChanVariable: VAR2=%(VAR2)s" % dest_channel_vasiable,
         ])
 
         event = ami.Event('DummyEvent', {})
         data = event.read(ami_data).keys
 
-        self.assertTrue(data['VAR1'], VAR1)
-        self.assertTrue(data['VAR2'], VAR2)
-        self.assertTrue(data['Dest_VAR1'], DEST_VAR1)
-        self.assertTrue(data['Dest_VAR2'], DEST_VAR2)
+        self.assertDictEqual(data['ChanVariable'], channel_variable)
+        self.assertDictEqual(data['DestChanVariable'], dest_channel_vasiable)
 
+
+    def test_event_without_channel_variables(self):
+
+        ami_data = '\n'.join([
+            "Event: AgentCalled",
+            "SomeVariable: SomeValue"
+        ])
+
+        event = ami.Event('DummyEvent', {})
+        data = event.read(ami_data).keys
+
+        self.assertDictEqual(data['ChanVariable'], {})
+        self.assertDictEqual(data['DestChanVariable'], {})
 
