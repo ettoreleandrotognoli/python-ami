@@ -44,9 +44,18 @@ class Event(object):
     def match(event):
         return bool(Event.match_regex.match(str(event)))
 
-    def __init__(self, name, keys):
+    def __init__(self, name, keys={}):
         self.name = name
         self.keys = keys
+
+    def __getitem__(self, item):
+        return self.keys[item]
+
+    def __setitem__(self, key, value):
+        self.keys[key] = value
+
+    def __iter__(self):
+        return iter(self.keys)
 
     def __str__(self):
         return 'Event : %s -> %s' % (self.name, self.keys)
