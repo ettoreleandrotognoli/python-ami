@@ -158,5 +158,5 @@ class MultipleChannelVariablesTestCase(unittest.TestCase):
 
         event = ami.Event.read(ami_data)
 
-        self.assertDictEqual(event['ChanVariable'], {})
-        self.assertDictEqual(event['DestChanVariable'], {})
+        self.assertNotIn('ChanVariable', event)
+        self.assertNotIn('DestChanVariable', event)

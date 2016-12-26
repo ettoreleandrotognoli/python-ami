@@ -9,3 +9,4 @@ class AMIEventTest(unittest.TestCase):
         self.assertEquals(event['a'], 1)
         self.assertEquals(event['b'], 2)
         self.assertListEqual(list(iter(keys)), list(iter(event)))
+        self.assertIn('a', event)

@@ -16,6 +16,15 @@ else:
 
 class Event(object):
     match_regex = re.compile('^Event: .*', re.IGNORECASE)
+    parsers = {}
+
+    @staticmethod
+    def register_parser(*event_name):
+        def wrapper(parser):
+            for name in event_name:
+                Event.parsers[name] = parser
+
+        return wrapper
 
     @staticmethod
     def read(event):
@@ -24,16 +33,12 @@ class Event(object):
         if not key.lower() == 'event':
             raise Exception()
         name = value
-        keys = {
-            'ChanVariable': {},
-            'DestChanVariable': {}
-        }
+        keys = {}
         for i in range(1, len(lines)):
             try:
                 (key, value) = lines[i].split(': ', 1)
-                if key in ('ChanVariable', 'DestChanVariable'):
-                    chan_variable_key, value = value.split('=', 1)
-                    keys[key][chan_variable_key] = value
+                if key in Event.parsers:
+                    Event.parsers[key](name, keys)(key, value)
                 else:
                     keys[key] = value
             except:
@@ -59,6 +64,24 @@ class Event(object):
 
     def __str__(self):
         return 'Event : %s -> %s' % (self.name, self.keys)
+
+
+class EventKeyParser(object):
+    def __init__(self, event, keys):
+        self.event = event
+        self.keys = keys
+
+    def __call__(self, key, value):
+        raise NotImplementedError()
+
+
+@Event.register_parser('ChanVariable', 'DestChanVariable')
+class KeyValueParser(EventKeyParser):
+    def __call__(self, key, value):
+        if key not in self.keys:
+            self.keys[key] = {}
+        k, v = value.split('=', 1)
+        self.keys[key][k] = v
 
 
 class EventListener(object):
