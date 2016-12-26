@@ -24,11 +24,18 @@ class Event(object):
         if not key.lower() == 'event':
             raise Exception()
         name = value
-        keys = {}
+        keys = {
+            'ChanVariable': {},
+            'DestChanVariable': {}
+        }
         for i in range(1, len(lines)):
             try:
                 (key, value) = lines[i].split(': ', 1)
-                keys[key] = value
+                if key in ('ChanVariable', 'DestChanVariable'):
+                    chan_variable_key, value = value.split('=', 1)
+                    keys[key][chan_variable_key] = value
+                else:
+                    keys[key] = value
             except:
                 pass
         return Event(name, keys)
