@@ -7,7 +7,7 @@ class Response(object):
 
     @staticmethod
     def read(response):
-        lines = str(response).splitlines()
+        lines = unicode(response).splitlines()
         (key, value) = lines[0].split(': ', 1)
         if not key.lower() == 'response':
             raise Exception()
@@ -25,7 +25,7 @@ class Response(object):
 
     @staticmethod
     def match(response):
-        return bool(Response.match_regex.match(str(response)))
+        return bool(Response.match_regex.match(unicode(response)))
 
     def __init__(self, status, keys={}, fallows=None):
         self.status = status

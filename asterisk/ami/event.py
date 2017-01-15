@@ -28,7 +28,7 @@ class Event(object):
 
     @staticmethod
     def read(event):
-        lines = str(event).splitlines()
+        lines = unicode(event).splitlines()
         (key, value) = lines[0].split(': ', 1)
         if not key.lower() == 'event':
             raise Exception()
@@ -47,7 +47,7 @@ class Event(object):
 
     @staticmethod
     def match(event):
-        return bool(Event.match_regex.match(str(event)))
+        return bool(Event.match_regex.match(unicode(event)))
 
     def __init__(self, name, keys={}):
         self.name = name

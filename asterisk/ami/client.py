@@ -68,7 +68,7 @@ class AMIClient(object):
         return future
 
     def send(self, pack):
-        self._socket.send(bytearray(str(pack) + '\r\n', 'utf-8'))
+        self._socket.send(bytearray(unicode(pack) + '\r\n', 'utf-8'))
 
     def _next_pack(self):
         data = b''
