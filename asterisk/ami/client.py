@@ -7,6 +7,19 @@ from .action import Action, LoginAction, LogoffAction
 from .event import Event, EventListener
 from .response import Response, FutureResponse
 
+try:
+    unicode = unicode
+except NameError:
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str, bytes)
+else:
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
+
 
 class AMIClient(object):
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
