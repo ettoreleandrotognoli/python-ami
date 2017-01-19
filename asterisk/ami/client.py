@@ -26,7 +26,7 @@ class AMIClient(object):
     asterisk_line_regex = re.compile(b'\r?\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile(b'\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
-    def __init__(self, address, port=5038, timeout=3, buffer_size=2 ** 10):
+    def __init__(self, address='127.0.0.1', port=5038, encoding='utf-8', timeout=3, buffer_size=2 ** 10):
         self._action_counter = 0
         self._futures = {}
         self._event_listeners = []
@@ -38,6 +38,7 @@ class AMIClient(object):
         self.finished = None
         self._ami_version = None
         self._timeout = timeout
+        self.encoding = encoding
 
     def next_action_id(self):
         id = self._action_counter
@@ -55,6 +56,7 @@ class AMIClient(object):
     def disconnect(self):
         self.finished.set()
         try:
+            self._socket.close()
             self._thread.join()
         except:
             pass
@@ -81,7 +83,10 @@ class AMIClient(object):
         return future
 
     def send(self, pack):
-        self._socket.send(bytearray(unicode(pack) + '\r\n', 'utf-8'))
+        self._socket.send(bytearray(unicode(pack) + '\r\n', self.encoding))
+
+    def _decode_pack(self, pack):
+        return pack.decode(self.encoding)
 
     def _next_pack(self):
         data = b''
@@ -93,12 +98,12 @@ class AMIClient(object):
             data += recv
             if self.asterisk_line_regex.search(data):
                 (pack, data) = self.asterisk_line_regex.split(data, 1)
-                yield pack.decode('utf-8')
+                yield self._decode_pack(pack)
                 break
         while not self.finished.is_set():
             while self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
-                yield pack.decode('utf-8')
+                yield self._decode_pack(pack)
             recv = self._socket.recv(self._buffer_size)
             if recv == b'':
                 self.finished.set()
