@@ -7,6 +7,10 @@ test-all:
 coverage:
 	coverage run -m unittest discover -s "tests/unit" -p "test_*.py"
 	coverage html --include="asterisk/*"
+
+coverage-all:
+	coverage run -m unittest discover -s "tests/" -p "test_*.py"
+	coverage html --include="asterisk/*"
 	python -mwebbrowser htmlcov/index.html &
 
 public:
