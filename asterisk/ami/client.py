@@ -26,7 +26,9 @@ class AMIClient(object):
     asterisk_line_regex = re.compile(b'\r?\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile(b'\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
-    def __init__(self, address='127.0.0.1', port=5038, encoding='utf-8', timeout=3, buffer_size=2 ** 10):
+    def __init__(self, address='127.0.0.1', port=5038,
+                 on_connect=None, on_disconnect=None,
+                 encoding='utf-8', timeout=3, buffer_size=2 ** 10):
         self._action_counter = 0
         self._futures = {}
         self._event_listeners = []
@@ -39,6 +41,8 @@ class AMIClient(object):
         self._ami_version = None
         self._timeout = timeout
         self.encoding = encoding
+        self.on_connect = on_connect or (lambda *args: None)
+        self.on_disconnect = on_disconnect or (lambda *args: None)
 
     def next_action_id(self):
         id = self._action_counter
@@ -118,12 +122,14 @@ class AMIClient(object):
         if not match:
             raise Exception()
         self._ami_version = match.group('version')
+        self.on_connect(self)
         try:
             while not self.finished.is_set():
                 pack = next(pack_generator)
                 self.fire_recv_pack(pack)
+            self.on_disconnect(self, error=None)
         except Exception as ex:
-            print(ex)
+            self.on_disconnect(self, error=ex)
 
     def fire_recv_reponse(self, response):
         if response.status.lower() == 'goodbye':
