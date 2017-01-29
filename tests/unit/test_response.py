@@ -1,5 +1,8 @@
 import unittest
-from asterisk.ami import Response
+import time
+import thread
+
+from asterisk.ami import Response, FutureResponse
 
 
 class AMIResponseTest(unittest.TestCase):
@@ -59,3 +62,42 @@ class AMIResponseTest(unittest.TestCase):
         self.assertFalse(Response.match(event))
         with self.assertRaises(Exception):
             Response.read(event)
+
+
+TIMEOUT = 0.01
+
+
+class TestFutureResponse(unittest.TestCase):
+    response = None
+
+    def test_callback(self):
+        expected = 'some response'
+
+        def callback(response):
+            self.response = response
+
+        future = FutureResponse(callback=callback)
+        future.response = expected
+        self.assertEqual(future.response, expected)
+        self.assertEqual(self.response, expected)
+
+    def test_lock_timeout(self):
+        future = FutureResponse(timeout=TIMEOUT)
+        before = time.time()
+        response = future.response
+        after = time.time()
+        diff = after - before
+        self.assertIsNone(response)
+        self.assertAlmostEqual(diff, TIMEOUT, delta=0.1)
+
+    def test_lock(self):
+        expected = 'some respone'
+        future = FutureResponse()
+
+        def runnable():
+            time.sleep(TIMEOUT)
+            future.response = expected
+
+        thread.start_new_thread(runnable, (), {})
+        response = future.response
+        self.assertEqual(response, expected)
