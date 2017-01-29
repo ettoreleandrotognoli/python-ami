@@ -1,6 +1,10 @@
 import unittest
 import time
-import thread
+
+try:
+    from thread import start_new_thread
+except ImportError:
+    from _thread import start_new_thread
 
 from asterisk.ami import Response, FutureResponse
 
@@ -98,6 +102,6 @@ class TestFutureResponse(unittest.TestCase):
             time.sleep(TIMEOUT)
             future.response = expected
 
-        thread.start_new_thread(runnable, (), {})
+        start_new_thread(runnable, (), {})
         response = future.response
         self.assertEqual(response, expected)
