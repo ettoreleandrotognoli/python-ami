@@ -13,12 +13,12 @@ def read(file_name):
 
 
 requirements = []
-str_version = ".".join(map(str, __version__))
+str_version = '.'.join(map(str, __version__))
 
 setup(
-    name="asterisk-ami",
+    name='asterisk-ami',
     version=str_version,
-    description="Python AMI Client",
+    description='Python AMI Client',
     long_description=read('README.rst'),
     url='https://github.com/ettoreleandrotognoli/python-ami/',
     download_url='https://github.com/ettoreleandrotognoli/python-ami/tree/%s/' % str_version,
@@ -31,6 +31,10 @@ setup(
     classifiers=[
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: BSD License',
     ],
     # install_requires=requirements,
     # tests_require=[],

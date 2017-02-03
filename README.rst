@@ -11,6 +11,9 @@ Python AMI Client
 .. image:: https://badge.fury.io/py/asterisk-ami.svg
     :target: https://badge.fury.io/py/asterisk-ami
 
+.. image:: https://img.shields.io/pypi/dm/asterisk-ami.svg
+    :target: https://pypi.python.org/pypi/asterisk-ami#downloads
+
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
 
