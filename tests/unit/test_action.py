@@ -1,7 +1,6 @@
 import unittest
 
-from asterisk.ami import LoginAction, LogoffAction
-from asterisk.ami.action import SimpleAction
+from asterisk.ami import LoginAction, LogoffAction, SimpleAction
 
 
 class AMIActionTest(unittest.TestCase):
