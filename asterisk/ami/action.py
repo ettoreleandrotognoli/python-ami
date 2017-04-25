@@ -13,8 +13,6 @@ class Action(object):
         return package
 
     def __getattr__(self, item):
-        if item in ('name', 'keys', 'variables'):
-            return object.__getattr__(self, item)
         return self.keys[item]
 
     def __setattr__(self, key, value):

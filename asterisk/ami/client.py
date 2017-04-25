@@ -3,7 +3,7 @@ import socket
 import threading
 from functools import partial
 
-from .action import Action, LoginAction, LogoffAction
+from .action import Action, LoginAction, LogoffAction, SimpleAction
 from .event import Event, EventListener
 from .response import Response, FutureResponse
 
