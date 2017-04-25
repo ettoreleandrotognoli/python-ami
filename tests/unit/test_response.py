@@ -59,8 +59,8 @@ class AMIResponseTest(unittest.TestCase):
 
     def test_with_key_value_follows(self):
         """
-            Action:  Command
-            Command: database show AMPUSER
+        Action:  Command
+        Command: database show AMPUSER
         """
         follows_response = '\r\n'.join([
             'Response: Follows',
@@ -535,6 +535,72 @@ class AMIResponseTest(unittest.TestCase):
             '/AMPUSER/400/voicemail                            : novm                     ',
             '468 results found.',
             '--END COMMAND--'
+        ]) + '\r\n'
+        self.assertTrue(Response.match(follows_response))
+        response = Response.read(follows_response)
+        self.assertFalse(response.is_error())
+        self.assertIsNotNone(response.follows)
+        self.assertListEqual(follows_response.split('\r\n')[2:-1], response.follows)
+        self.assertEqual(follows_response, str(response))
+
+    def test_with_follows_queue_show_command(self):
+        """
+        Action: Command
+        Command: queue show
+        """
+        follows_response = '\r\n'.join([
+            'Response: Follows',
+            'Privilege: Command',
+            '911 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Carol - Financeiro (Local/2007@from-queue/n from hint:2007@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '910 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Julio - Suporte (Local/2015@from-queue/n from hint:2015@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '      Ettore - Desenvolvimento (Local/2010@from-queue/n from hint:2010@ext-local) (ringinuse enabled) (dynamic) (Unavailable) has taken no calls yet',
+            '      Gustavo - Suporte (Local/2004@from-queue/n from hint:2004@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '912 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Carol - Financeiro (Local/2007@from-queue/n from hint:2007@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '901 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      NoteTeo (Local/2005@from-queue/n from hint:2005@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '      Carol - Financeiro (Local/2007@from-queue/n from hint:2007@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            'default has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 0s',
+            '   No Members',
+            '   No Callers',
+            '',
+            '902 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Julio - Suporte (Local/2015@from-queue/n from hint:2015@ext-local) (ringinuse enabled) (dynamic) (Unavailable) has taken no calls yet',
+            '      Wainer (Local/2000@from-queue/n from hint:2000@ext-local) (ringinuse enabled) (dynamic) (Unavailable) has taken no calls yet',
+            '      Gustavo - Suporte (Local/2004@from-queue/n from hint:2004@ext-local) (ringinuse enabled) (dynamic) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '903 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Ettore - Desenvolvimento (Local/2010@from-queue/n from hint:2010@ext-local) (ringinuse enabled) (dynamic) (paused) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '951 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Wainer (Local/2000@from-queue/n from hint:2000@ext-local) (ringinuse enabled) (dynamic) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '950 has 0 calls (max 1) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
+            '   Members: ',
+            '      Ettore - Desenvolvimento (Local/2010@from-queue/n from hint:2010@ext-local) (ringinuse enabled) (dynamic) (paused) (Unavailable) has taken no calls yet',
+            '   No Callers',
+            '',
+            '--END COMMAND--',
         ]) + '\r\n'
         self.assertTrue(Response.match(follows_response))
         response = Response.read(follows_response)
