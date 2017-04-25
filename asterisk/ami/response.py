@@ -8,7 +8,7 @@ class Response(object):
     @staticmethod
     def read(response):
         lines = response.splitlines()
-        (key, value) = lines[0].split(': ', 1)
+        (key, value) = map(lambda s: s.strip(), lines[0].split(':', 1))
         if not key.lower() == 'response':
             raise Exception()
         status = value
@@ -16,7 +16,9 @@ class Response(object):
         follows = [] if status.lower() == 'follows' else None
         for line in lines[1:]:
             try:
-                (key, value) = line.split(': ', 1)
+                (key, value) = map(lambda s: s.strip(), line.split(':', 1))
+                if '/' in key:
+                    raise key
                 keys[key] = value
             except:
                 if follows is not None:
