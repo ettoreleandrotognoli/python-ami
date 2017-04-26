@@ -3,7 +3,7 @@ import socket
 import threading
 from functools import partial
 
-from .action import Action, LoginAction, LogoffAction, SimpleAction
+from .action import Action, LoginAction, LogoffAction,SimpleAction
 from .event import Event, EventListener
 from .response import Response, FutureResponse
 
@@ -32,19 +32,19 @@ class AMIClientListener(object):
                 raise TypeError('\'%s\' is an invalid keyword argument for this function' % k)
             setattr(self, k, v)
 
-    def on_action(self, action, source):
+    def on_action(self, source, action):
         raise NotImplementedError()
 
-    def on_response(self, response, source):
+    def on_response(self, source, response):
         raise NotImplementedError()
 
-    def on_event(self, event, source):
+    def on_event(self, source, event):
         raise NotImplementedError()
 
     def on_connect(self, source):
         raise NotImplementedError()
 
-    def on_disconnect(self, source):
+    def on_disconnect(self, source, error=None):
         raise NotImplementedError()
 
 
@@ -82,8 +82,25 @@ class AMIClient(object):
         self._thread.start()
         self._fire_on_connect()
 
-    def _fire_on_connect(self):
-        pass
+    def _fire_on_connect(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_connect(source=self, **kwargs)
+
+    def _fire_on_disconnect(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_disconnect(source=self, **kwargs)
+
+    def _fire_on_response(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_response(source=self, **kwargs)
+
+    def _fire_on_action(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_action(source=self, **kwargs)
+
+    def _fire_on_event(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_event(source=self, **kwargs)
 
     def disconnect(self):
         self.finished.set()
@@ -92,9 +109,6 @@ class AMIClient(object):
             self._thread.join()
         except:
             pass
-
-    def _fire_on_disconnect(self):
-        pass
 
     def login(self, username, secret, callback=None):
         if self.finished is None or self.finished.is_set():
@@ -114,8 +128,7 @@ class AMIClient(object):
             action_id = action.keys['ActionID']
         future = FutureResponse(callback, self._timeout)
         self._futures[action_id] = future
-        for listener in self._listeners:
-            listener.on_action(action=action, source=self)
+        self._fire_on_action(action=action)
         self.send(action)
         return future
 
@@ -155,16 +168,17 @@ class AMIClient(object):
         if not match:
             raise Exception()
         self._ami_version = match.group('version')
+        self._fire_on_connect()
         try:
             while not self.finished.is_set():
                 pack = next(pack_generator)
                 self.fire_recv_pack(pack)
+            self._fire_on_disconnect(error=None)
         except Exception as ex:
-            print(ex)
+            self._fire_on_disconnect(error=ex)
 
     def fire_recv_reponse(self, response):
-        for listener in self._listeners:
-            listener.on_response(response=response, source=self)
+        self._fire_on_response(response=response)
         if response.status.lower() == 'goodbye':
             self.finished.set()
         if 'ActionID' not in response.keys:
@@ -176,8 +190,9 @@ class AMIClient(object):
         future.response = response
 
     def fire_recv_event(self, event):
-        for listener in self._listeners:
-            listener.on_event(event=event, source=self)
+        self._fire_on_event(event=event)
+        for listener in self._event_listeners:
+            listener(event=event, source=self)
 
     def fire_recv_pack(self, pack):
         if Response.match(pack):
@@ -202,17 +217,11 @@ class AMIClient(object):
             event_listener = EventListener(on_event=on_event, **kwargs)
         else:
             event_listener = on_event
-        listener = AMIClientListener(
-            on_event=event_listener,
-            on_action=NOOP,
-            on_connect=NOOP,
-            on_response=NOOP,
-            on_disconnect=NOOP,
-        )
-        return self.add_listener(listener)
+        self._event_listeners.append(event_listener)
+        return event_listener
 
     def remove_event_listener(self, event_listener):
-        self.remove_listener(event_listener)
+        self._event_listeners.remove(event_listener)
 
 
 class AMIClientAdapter(object):

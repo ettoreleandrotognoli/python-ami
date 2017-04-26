@@ -18,17 +18,17 @@ class AMIClientTest(unittest.TestCase):
         def event_listener(event, **kwargs):
             self.event = event
 
-        event_listener_reference = self.client.add_event_listener(event_listener)
+        self.client.add_event_listener(event_listener)
         self.client.fire_recv_event(self.build_event())
         self.assertIsNotNone(self.event)
-        self.client.remove_event_listener(event_listener_reference)
+        self.client.remove_event_listener(event_listener)
         self.assertEqual(len(self.client._event_listeners), 0)
 
         self.event = None
-        event_listener_reference = self.client.add_event_listener(event_listener, white_list='OtherEvent')
+        listener = self.client.add_event_listener(event_listener, white_list='OtherEvent')
         self.client.fire_recv_event(self.build_event())
         self.assertIsNone(self.event)
-        self.client.remove_event_listener(event_listener_reference)
+        self.client.remove_event_listener(listener)
         self.assertEqual(len(self.client._event_listeners), 0)
 
         self.client.add_event_listener(event_listener, white_list='SomeEvent')
