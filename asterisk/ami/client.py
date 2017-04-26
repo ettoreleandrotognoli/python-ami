@@ -28,11 +28,12 @@ NOOP_LISTENER = dict(
     on_event=NOOP,
     on_connect=NOOP,
     on_disconnect=NOOP,
+    on_unknown=NOOP,
 )
 
 
 class AMIClientListener(object):
-    methods = ['on_action', 'on_response', 'on_event', 'on_connect', 'on_disconnect']
+    methods = ['on_action', 'on_response', 'on_event', 'on_connect', 'on_disconnect', 'on_unknown']
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -53,6 +54,9 @@ class AMIClientListener(object):
         raise NotImplementedError()
 
     def on_disconnect(self, source, error=None):
+        raise NotImplementedError()
+
+    def on_unknown(self, source, pack):
         raise NotImplementedError()
 
 
@@ -113,6 +117,10 @@ class AMIClient(object):
     def _fire_on_event(self, **kwargs):
         for listener in self._listeners:
             listener.on_event(source=self, **kwargs)
+
+    def _fire_on_unknown(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_unknown(source=self, **kwargs)
 
     def disconnect(self):
         self.finished.set()
@@ -210,9 +218,12 @@ class AMIClient(object):
         if Response.match(pack):
             response = Response.read(pack)
             self.fire_recv_reponse(response)
+            return
         if Event.match(pack):
             event = Event.read(pack)
             self.fire_recv_event(event)
+            return
+        self._fire_on_unknown(pack=pack)
 
     def add_listener(self, listener=None, **kwargs):
         if not listener:
