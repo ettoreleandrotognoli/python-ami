@@ -96,7 +96,6 @@ class AMIClient(object):
         self._thread = threading.Thread(target=self.listen)
         self._thread.daemon = True
         self._thread.start()
-        self._fire_on_connect()
 
     def _fire_on_connect(self, **kwargs):
         for listener in self._listeners:
