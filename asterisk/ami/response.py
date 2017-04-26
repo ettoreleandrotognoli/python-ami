@@ -4,6 +4,7 @@ import threading
 
 class Response(object):
     match_regex = re.compile('^Response: .*', re.IGNORECASE)
+    key_regex = re.compile('^[a-zA-Z0-9_\-]+$')
 
     @staticmethod
     def read(response):
@@ -14,15 +15,20 @@ class Response(object):
         status = value
         keys = {}
         follows = [] if status.lower() == 'follows' else None
-        for line in lines[1:]:
+        keys_and_follows = iter(lines[1:])
+        for line in keys_and_follows:
             try:
-                (key, value) = map(lambda s: s.strip(), line.split(':', 1))
-                if '/' in key:
+                (key, value) = line.split(':', 1)
+                if not Response.key_regex.match(key):
                     raise key
-                keys[key] = value
+                keys[key.strip()] = value.strip()
             except:
                 if follows is not None:
                     follows.append(line)
+                break
+        if follows is not None:
+            for line in keys_and_follows:
+                follows.append(line)
         return Response(status, keys, follows)
 
     @staticmethod

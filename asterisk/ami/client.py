@@ -20,6 +20,41 @@ else:
     bytes = str
     basestring = basestring
 
+NOOP = lambda *args, **kwargs: None
+
+NOOP_LISTENER = dict(
+    on_action=NOOP,
+    on_response=NOOP,
+    on_event=NOOP,
+    on_connect=NOOP,
+    on_disconnect=NOOP,
+)
+
+
+class AMIClientListener(object):
+    methods = ['on_action', 'on_response', 'on_event', 'on_connect', 'on_disconnect']
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            if k not in self.methods:
+                raise TypeError('\'%s\' is an invalid keyword argument for this function' % k)
+            setattr(self, k, v)
+
+    def on_action(self, source, action):
+        raise NotImplementedError()
+
+    def on_response(self, source, response):
+        raise NotImplementedError()
+
+    def on_event(self, source, event):
+        raise NotImplementedError()
+
+    def on_connect(self, source):
+        raise NotImplementedError()
+
+    def on_disconnect(self, source, error=None):
+        raise NotImplementedError()
+
 
 class AMIClient(object):
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
@@ -27,10 +62,11 @@ class AMIClient(object):
     asterisk_pack_regex = re.compile(b'\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address='127.0.0.1', port=5038,
-                 on_connect=None, on_disconnect=None,
-                 encoding='utf-8', timeout=3, buffer_size=2 ** 10):
+                 encoding='utf-8', timeout=3, buffer_size=2 ** 10,
+                 **kwargs):
         self._action_counter = 0
         self._futures = {}
+        self._listeners = []
         self._event_listeners = []
         self._address = address
         self._buffer_size = buffer_size
@@ -41,8 +77,8 @@ class AMIClient(object):
         self._ami_version = None
         self._timeout = timeout
         self.encoding = encoding
-        self.on_connect = on_connect or (lambda *args: None)
-        self.on_disconnect = on_disconnect or (lambda *args: None)
+        if len(kwargs) > 0:
+            self.add_listener(**kwargs)
 
     def next_action_id(self):
         id = self._action_counter
@@ -56,6 +92,27 @@ class AMIClient(object):
         self._thread = threading.Thread(target=self.listen)
         self._thread.daemon = True
         self._thread.start()
+        self._fire_on_connect()
+
+    def _fire_on_connect(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_connect(source=self, **kwargs)
+
+    def _fire_on_disconnect(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_disconnect(source=self, **kwargs)
+
+    def _fire_on_response(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_response(source=self, **kwargs)
+
+    def _fire_on_action(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_action(source=self, **kwargs)
+
+    def _fire_on_event(self, **kwargs):
+        for listener in self._listeners:
+            listener.on_event(source=self, **kwargs)
 
     def disconnect(self):
         self.finished.set()
@@ -83,6 +140,7 @@ class AMIClient(object):
             action_id = action.keys['ActionID']
         future = FutureResponse(callback, self._timeout)
         self._futures[action_id] = future
+        self._fire_on_action(action=action)
         self.send(action)
         return future
 
@@ -122,16 +180,17 @@ class AMIClient(object):
         if not match:
             raise Exception()
         self._ami_version = match.group('version')
-        self.on_connect(self)
+        self._fire_on_connect()
         try:
             while not self.finished.is_set():
                 pack = next(pack_generator)
                 self.fire_recv_pack(pack)
-            self.on_disconnect(self, error=None)
+            self._fire_on_disconnect(error=None)
         except Exception as ex:
-            self.on_disconnect(self, error=ex)
+            self._fire_on_disconnect(error=ex)
 
     def fire_recv_reponse(self, response):
+        self._fire_on_response(response=response)
         if response.status.lower() == 'goodbye':
             self.finished.set()
         if 'ActionID' not in response.keys:
@@ -143,6 +202,7 @@ class AMIClient(object):
         future.response = response
 
     def fire_recv_event(self, event):
+        self._fire_on_event(event=event)
         for listener in self._event_listeners:
             listener(event=event, source=self)
 
@@ -153,6 +213,18 @@ class AMIClient(object):
         if Event.match(pack):
             event = Event.read(pack)
             self.fire_recv_event(event)
+
+    def add_listener(self, listener=None, **kwargs):
+        if not listener:
+            default = NOOP_LISTENER.copy()
+            default.update(kwargs)
+            listener = AMIClientListener(**default)
+        self._listeners.append(listener)
+        return listener
+
+    def remove_listener(self, listener):
+        self._listeners.remove(listener)
+        return listener
 
     def add_event_listener(self, on_event=None, **kwargs):
         if len(kwargs) > 0 and not isinstance(on_event, EventListener):
