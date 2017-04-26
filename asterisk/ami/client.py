@@ -20,6 +20,33 @@ else:
     bytes = str
     basestring = basestring
 
+NOOP = lambda *args, **kwargs: None
+
+
+class AMIClientListener(object):
+    methods = ['on_action', 'on_response', 'on_event', 'on_connect', 'on_disconnect']
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            if k not in self.methods:
+                raise TypeError('\'%s\' is an invalid keyword argument for this function' % k)
+            setattr(self, k, v)
+
+    def on_action(self, action, source):
+        raise NotImplementedError()
+
+    def on_response(self, response, source):
+        raise NotImplementedError()
+
+    def on_event(self, event, source):
+        raise NotImplementedError()
+
+    def on_connect(self, source):
+        raise NotImplementedError()
+
+    def on_disconnect(self, source):
+        raise NotImplementedError()
+
 
 class AMIClient(object):
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
@@ -29,6 +56,7 @@ class AMIClient(object):
     def __init__(self, address='127.0.0.1', port=5038, encoding='utf-8', timeout=3, buffer_size=2 ** 10):
         self._action_counter = 0
         self._futures = {}
+        self._listeners = []
         self._event_listeners = []
         self._address = address
         self._buffer_size = buffer_size
@@ -52,6 +80,10 @@ class AMIClient(object):
         self._thread = threading.Thread(target=self.listen)
         self._thread.daemon = True
         self._thread.start()
+        self._fire_on_connect()
+
+    def _fire_on_connect(self):
+        pass
 
     def disconnect(self):
         self.finished.set()
@@ -60,6 +92,9 @@ class AMIClient(object):
             self._thread.join()
         except:
             pass
+
+    def _fire_on_disconnect(self):
+        pass
 
     def login(self, username, secret, callback=None):
         if self.finished is None or self.finished.is_set():
@@ -79,6 +114,8 @@ class AMIClient(object):
             action_id = action.keys['ActionID']
         future = FutureResponse(callback, self._timeout)
         self._futures[action_id] = future
+        for listener in self._listeners:
+            listener.on_action(action=action, source=self)
         self.send(action)
         return future
 
@@ -126,6 +163,8 @@ class AMIClient(object):
             print(ex)
 
     def fire_recv_reponse(self, response):
+        for listener in self._listeners:
+            listener.on_response(response=response, source=self)
         if response.status.lower() == 'goodbye':
             self.finished.set()
         if 'ActionID' not in response.keys:
@@ -137,8 +176,8 @@ class AMIClient(object):
         future.response = response
 
     def fire_recv_event(self, event):
-        for listener in self._event_listeners:
-            listener(event=event, source=self)
+        for listener in self._listeners:
+            listener.on_event(event=event, source=self)
 
     def fire_recv_pack(self, pack):
         if Response.match(pack):
@@ -148,16 +187,32 @@ class AMIClient(object):
             event = Event.read(pack)
             self.fire_recv_event(event)
 
+    def add_listener(self, listener=None, **kwargs):
+        if not listener:
+            listener = AMIClientListener(**kwargs)
+        self._listeners.append(listener)
+        return listener
+
+    def remove_listener(self, listener):
+        self._listeners.remove(listener)
+        return listener
+
     def add_event_listener(self, on_event=None, **kwargs):
         if len(kwargs) > 0 and not isinstance(on_event, EventListener):
             event_listener = EventListener(on_event=on_event, **kwargs)
         else:
             event_listener = on_event
-        self._event_listeners.append(event_listener)
-        return event_listener
+        listener = AMIClientListener(
+            on_event=event_listener,
+            on_action=NOOP,
+            on_connect=NOOP,
+            on_response=NOOP,
+            on_disconnect=NOOP,
+        )
+        return self.add_listener(listener)
 
     def remove_event_listener(self, event_listener):
-        self._event_listeners.remove(event_listener)
+        self.remove_listener(event_listener)
 
 
 class AMIClientAdapter(object):
