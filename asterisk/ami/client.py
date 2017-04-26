@@ -58,8 +58,8 @@ class AMIClientListener(object):
 
 class AMIClient(object):
     asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
-    asterisk_line_regex = re.compile(b'\r?\n', re.IGNORECASE | re.MULTILINE)
-    asterisk_pack_regex = re.compile(b'\r?\n\r?\n', re.IGNORECASE | re.MULTILINE)
+    asterisk_line_regex = re.compile(b'\r\n', re.IGNORECASE | re.MULTILINE)
+    asterisk_pack_regex = re.compile(b'\r\n\r\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address='127.0.0.1', port=5038,
                  encoding='utf-8', timeout=3, buffer_size=2 ** 10,
