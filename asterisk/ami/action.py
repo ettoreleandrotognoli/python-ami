@@ -1,8 +1,8 @@
 class Action(object):
-    def __init__(self, name, keys={}, variables={}):
+    def __init__(self, name, keys=None, variables=None):
         self.name = name
-        self.keys = keys
-        self.variables = variables
+        self.keys = keys or dict()
+        self.variables = variables or dict()
 
     def __str__(self):
         package = 'Action: %s\r\n' % self.name
@@ -29,7 +29,7 @@ class Action(object):
 
 class SimpleAction(Action):
     def __init__(self, name, **kwargs):
-        Action.__init__(self, name=name, keys=kwargs)
+        super(SimpleAction, self).__init__(name=name, keys=kwargs)
 
 
 class LoginAction(Action):
