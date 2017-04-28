@@ -45,7 +45,7 @@ class Response(object):
         for key in self.keys:
             package += '%s: %s\r\n' % (key, self.keys[key])
         if self.follows is not None and len(self.follows) > 0:
-            package += '\r\n'.join(self.follows) + '\r\n'
+            package += '\n'.join(self.follows) + '\r\n'
         return package
 
     def is_error(self):
@@ -65,10 +65,11 @@ class FutureResponse(object):
                 self._callback(response)
         except Exception as ex:
             print(ex)
-        self._lock.acquire()
-        self._response = response
-        self._lock.notifyAll()
-        self._lock.release()
+        finally:
+            self._lock.acquire()
+            self._response = response
+            self._lock.notifyAll()
+            self._lock.release()
 
     def get_response(self):
         if self._response is not None:

@@ -1,3 +1,4 @@
+import re
 import time
 import unittest
 
@@ -7,6 +8,8 @@ except ImportError:
     from _thread import start_new_thread
 
 from asterisk.ami import Response, FutureResponse
+
+LINE_REGEX = re.compile(r'\r?\n')
 
 
 class AMIResponseTest(unittest.TestCase):
@@ -44,8 +47,8 @@ class AMIResponseTest(unittest.TestCase):
         self.assertEqual(goodbye_response, str(response))
 
     def test_with_follows(self):
-        follows_response = '\r\n'.join([
-            'Response: Follows',
+        follows_response = '\n'.join([
+            'Response: Follows\r',
             'Channel (Context Extension Pri ) State Appl. Data',
             '0 active channel(s)',
             '--END COMMAND--',
@@ -54,7 +57,7 @@ class AMIResponseTest(unittest.TestCase):
         response = Response.read(follows_response)
         self.assertFalse(response.is_error())
         self.assertIsNotNone(response.follows)
-        self.assertListEqual(follows_response.split('\r\n')[1:-1], response.follows)
+        self.assertListEqual(LINE_REGEX.split(follows_response)[1:-1], response.follows)
         self.assertEqual(follows_response, str(response))
 
     def test_with_key_value_follows(self):
@@ -62,9 +65,9 @@ class AMIResponseTest(unittest.TestCase):
         Action:  Command
         Command: database show AMPUSER
         """
-        follows_response = '\r\n'.join([
-            'Response: Follows',
-            'Privilege: Command',
+        follows_response = '\n'.join([
+            'Response: Follows\r',
+            'Privilege: Command\r',
             '/AMPUSER/*/concurrency_limit                      : 4                        ',
             '/AMPUSER/2000/answermode                          : disabled                 ',
             '/AMPUSER/2000/cfringtimer                         : 0                        ',
@@ -540,7 +543,7 @@ class AMIResponseTest(unittest.TestCase):
         response = Response.read(follows_response)
         self.assertFalse(response.is_error())
         self.assertIsNotNone(response.follows)
-        self.assertListEqual(follows_response.split('\r\n')[2:-1], response.follows)
+        self.assertListEqual(LINE_REGEX.split(follows_response)[2:-1], response.follows)
         self.assertEqual(follows_response, str(response))
 
     def test_with_follows_queue_show_command(self):
@@ -548,9 +551,9 @@ class AMIResponseTest(unittest.TestCase):
         Action: Command
         Command: queue show
         """
-        follows_response = '\r\n'.join([
-            'Response: Follows',
-            'Privilege: Command',
+        follows_response = '\n'.join([
+            'Response: Follows\r',
+            'Privilege: Command\r',
             '911 has 0 calls (max unlimited) in \'ringall\' strategy (0s holdtime, 0s talktime), W:0, C:0, A:0, SL:0.0% within 60s',
             '   Members: ',
             '      Carol - Financeiro (Local/2007@from-queue/n from hint:2007@ext-local) (ringinuse enabled) (Unavailable) has taken no calls yet',
@@ -606,7 +609,7 @@ class AMIResponseTest(unittest.TestCase):
         response = Response.read(follows_response)
         self.assertFalse(response.is_error())
         self.assertIsNotNone(response.follows)
-        self.assertListEqual(follows_response.split('\r\n')[2:-1], response.follows)
+        self.assertListEqual(LINE_REGEX.split(follows_response)[2:-1], response.follows)
         self.assertEqual(follows_response, str(response))
 
     def test_event(self):
