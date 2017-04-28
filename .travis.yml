@@ -3,6 +3,10 @@ sudo: false
 python:
   - 2.7
   - 3.4
+  - 3.5
+  - 3.6
+  - pypy
+  - pypy3
 before_install:
   - pip install codecov
 install:
