@@ -14,7 +14,7 @@ class Response(object):
             raise Exception()
         status = value
         keys = {}
-        follows = [] if status.lower() == 'follows' else None
+        follows = []
         keys_and_follows = iter(lines[1:])
         for line in keys_and_follows:
             try:
