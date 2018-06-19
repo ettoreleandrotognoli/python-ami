@@ -23,12 +23,10 @@ class Response(object):
                     raise key
                 keys[key.strip()] = value.strip()
             except:
-                if follows is not None:
-                    follows.append(line)
-                break
-        if follows is not None:
-            for line in keys_and_follows:
                 follows.append(line)
+                break
+        for line in keys_and_follows:
+            follows.append(line)
         return Response(status, keys, follows)
 
     @staticmethod
@@ -44,7 +42,7 @@ class Response(object):
         package = 'Response: %s\r\n' % self.status
         for key in self.keys:
             package += '%s: %s\r\n' % (key, self.keys[key])
-        if self.follows is not None and len(self.follows) > 0:
+        if self.follows:
             package += '\n'.join(self.follows) + '\r\n'
         return package
 
