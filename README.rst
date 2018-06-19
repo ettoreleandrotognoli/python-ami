@@ -17,6 +17,11 @@ Python AMI Client
 .. image:: https://api.codeclimate.com/v1/badges/429cda25d75ab470d7f6/maintainability
    :target: https://codeclimate.com/github/ettoreleandrotognoli/python-ami/maintainability
    :alt: Maintainability
+   
+.. image:: https://api.codeclimate.com/v1/badges/429cda25d75ab470d7f6/test_coverage
+   :target: https://codeclimate.com/github/ettoreleandrotognoli/python-ami/test_coverage
+   :alt: Test Coverage
+
 
 
 A simple Python AMI client
@@ -41,6 +46,7 @@ Install latest asterisk-ami
 
 Usage
 -----
+
 
 Connect
 ~~~~~~~
