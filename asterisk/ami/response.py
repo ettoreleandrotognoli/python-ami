@@ -64,7 +64,7 @@ class FutureResponse(object):
             if self._callback is not None:
                 self._callback(response)
         except Exception as ex:
-            print(ex)
+            traceback.print_exc()
         self._lock.acquire()
         self._response = response
         self._lock.notifyAll()
