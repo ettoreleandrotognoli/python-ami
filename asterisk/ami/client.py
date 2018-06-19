@@ -3,22 +3,10 @@ import socket
 import threading
 from functools import partial
 
+from .utils import basestring
 from .action import Action, LoginAction, LogoffAction, SimpleAction
 from .event import Event, EventListener
 from .response import Response, FutureResponse
-
-try:
-    unicode = unicode
-except NameError:
-    str = str
-    unicode = str
-    bytes = bytes
-    basestring = (str, bytes)
-else:
-    str = str
-    unicode = unicode
-    bytes = str
-    basestring = basestring
 
 NOOP = lambda *args, **kwargs: None
 
