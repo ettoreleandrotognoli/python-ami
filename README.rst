@@ -22,7 +22,9 @@ Python AMI Client
    :target: https://codeclimate.com/github/ettoreleandrotognoli/python-ami/test_coverage
    :alt: Test Coverage
 
-
+.. image:: https://www.codefactor.io/repository/github/ettoreleandrotognoli/python-ami/badge
+    :target: https://www.codefactor.io/repository/github/ettoreleandrotognoli/python-ami
+    :alt: CodeFactor
 
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
