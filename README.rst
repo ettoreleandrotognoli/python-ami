@@ -22,6 +22,8 @@ Python AMI Client
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
 
+See the `code of conduct <CODE_OF_CONDUCT.md>`_.
+
 Install
 -------
 

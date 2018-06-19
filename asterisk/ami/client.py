@@ -66,7 +66,8 @@ class AMIClient(object):
     asterisk_pack_regex = re.compile(b'\r\n\r\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address='127.0.0.1', port=5038,
-                 encoding='utf-8', timeout=3, buffer_size=2 ** 10,
+                 encoding='utf-8',encoding_errors='replace',
+                 timeout=3, buffer_size=2 ** 10,
                  **kwargs):
         self._action_counter = 0
         self._futures = {}
@@ -81,6 +82,7 @@ class AMIClient(object):
         self._ami_version = None
         self._timeout = timeout
         self.encoding = encoding
+        self.encoding_errors = encoding_errors
         if len(kwargs) > 0:
             self.add_listener(**kwargs)
 
@@ -155,7 +157,7 @@ class AMIClient(object):
         self._socket.send(bytearray(unicode(pack) + '\r\n', self.encoding))
 
     def _decode_pack(self, pack):
-        return pack.decode(self.encoding)
+        return pack.decode(self.encoding,errors=self.encoding_errors)
 
     def _next_pack(self):
         data = b''
