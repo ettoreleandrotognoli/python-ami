@@ -3,10 +3,10 @@ import socket
 import threading
 from functools import partial
 
-from .utils import basestring
 from .action import Action, LoginAction, LogoffAction, SimpleAction
 from .event import Event, EventListener
 from .response import Response, FutureResponse
+from .utils import str, unicode
 
 NOOP = lambda *args, **kwargs: None
 
@@ -54,7 +54,7 @@ class AMIClient(object):
     asterisk_pack_regex = re.compile(b'\r\n\r\n', re.IGNORECASE | re.MULTILINE)
 
     def __init__(self, address='127.0.0.1', port=5038,
-                 encoding='utf-8',encoding_errors='replace',
+                 encoding='utf-8', encoding_errors='replace',
                  timeout=3, buffer_size=2 ** 10,
                  **kwargs):
         self._action_counter = 0
@@ -145,7 +145,7 @@ class AMIClient(object):
         self._socket.send(bytearray(unicode(pack) + '\r\n', self.encoding))
 
     def _decode_pack(self, pack):
-        return pack.decode(self.encoding,errors=self.encoding_errors)
+        return pack.decode(self.encoding, errors=self.encoding_errors)
 
     def _next_pack(self):
         data = b''
