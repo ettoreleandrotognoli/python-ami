@@ -1,7 +1,9 @@
-import unittest
 import time
+import unittest
+
 from asterisk.ami import AMIClient
 from mock_ami import AMIMock
+from tests.settings import login
 
 
 class ConnectionTest(unittest.TestCase):
@@ -18,4 +20,5 @@ class ConnectionTest(unittest.TestCase):
         client.connect()
         time.sleep(0.5)
         self.assertEqual(client._ami_version, '6.6.6')
+        client.login(**login)
         client.disconnect()
