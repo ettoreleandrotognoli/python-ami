@@ -8,6 +8,7 @@ class ConnectionTest(unittest.TestCase):
     def setUp(self):
         self.server = AMIMock()
         self.server_address = self.server.start()
+        time.sleep(0.2)
 
     def tearDown(self):
         self.server.stop()
