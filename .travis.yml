@@ -1,4 +1,5 @@
 language: python
+cache: pip
 env:
   global:
     - CC_TEST_REPORTER_ID=6430db36aaa11127ecba543d1c8485f4a3697dbd9ec066e5e92979bc6763579b
