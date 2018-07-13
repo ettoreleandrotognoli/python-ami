@@ -1,8 +1,10 @@
+PYTHON?=python
+
 test:
-	python -m unittest discover -s "tests/unit" -p "test_*.py"
+	${PYTHON} -m unittest discover -s "tests/unit" -p "test_*.py"
 
 test-all:
-	python -m unittest discover -s "tests/" -p "test_*.py"
+	${PYTHON} -m unittest discover -s "tests/" -p "test_*.py"
 
 coverage:
 	coverage run -m unittest discover -s "tests/unit" -p "test_*.py"
@@ -11,15 +13,15 @@ coverage:
 coverage-all:
 	coverage run -m unittest discover -s "tests/" -p "test_*.py"
 	coverage html --include="asterisk/*"
-	python -mwebbrowser htmlcov/index.html &
+	${PYTHON} -mwebbrowser htmlcov/index.html &
 
 public:
-	python setup.py register -r pypi
-	python setup.py sdist upload -r pypi
+	${PYTHON} setup.py register -r pypi
+	${PYTHON} setup.py sdist upload -r pypi
 
 public-test:
-	python setup.py register -r pypitest
-	python setup.py sdist upload -r pypitest
+	${PYTHON} setup.py register -r pypitest
+	${PYTHON} setup.py sdist upload -r pypitest
 
 clean:
 	rm -f $(shell find . -name "*.pyc")

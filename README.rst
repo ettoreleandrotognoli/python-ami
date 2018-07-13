@@ -13,9 +13,23 @@ Python AMI Client
 
 .. image:: https://img.shields.io/pypi/dm/asterisk-ami.svg
     :target: https://pypi.python.org/pypi/asterisk-ami#downloads
+    
+.. image:: https://api.codeclimate.com/v1/badges/429cda25d75ab470d7f6/maintainability
+   :target: https://codeclimate.com/github/ettoreleandrotognoli/python-ami/maintainability
+   :alt: Maintainability
+   
+.. image:: https://api.codeclimate.com/v1/badges/429cda25d75ab470d7f6/test_coverage
+   :target: https://codeclimate.com/github/ettoreleandrotognoli/python-ami/test_coverage
+   :alt: Test Coverage
+
+.. image:: https://www.codefactor.io/repository/github/ettoreleandrotognoli/python-ami/badge
+    :target: https://www.codefactor.io/repository/github/ettoreleandrotognoli/python-ami
+    :alt: CodeFactor
 
 A simple Python AMI client
 http://programandonoaquario.blogspot.com.br
+
+See the `code of conduct <CODE_OF_CONDUCT.md>`_.
 
 Install
 -------
@@ -34,6 +48,7 @@ Install latest asterisk-ami
 
 Usage
 -----
+
 
 Connect
 ~~~~~~~

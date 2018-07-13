@@ -21,7 +21,7 @@ class AMIResponseTest(unittest.TestCase):
         self.assertTrue(Response.match(login_response))
         response = Response.read(login_response)
         self.assertFalse(response.is_error())
-        self.assertIsNone(response.follows)
+        self.assertFalse(response.follows)
         self.assertEqual(login_response, str(response))
 
     def test_login_response_fail(self):
@@ -32,7 +32,7 @@ class AMIResponseTest(unittest.TestCase):
         self.assertTrue(Response.match(login_response))
         response = Response.read(login_response)
         self.assertTrue(response.is_error())
-        self.assertIsNone(response.follows)
+        self.assertFalse(response.follows)
         self.assertEqual(login_response, str(response))
 
     def test_goodbye_response(self):
@@ -43,7 +43,7 @@ class AMIResponseTest(unittest.TestCase):
         self.assertTrue(Response.match(goodbye_response))
         response = Response.read(goodbye_response)
         self.assertFalse(response.is_error())
-        self.assertIsNone(response.follows)
+        self.assertFalse(response.follows)
         self.assertEqual(goodbye_response, str(response))
 
     def test_with_follows(self):
