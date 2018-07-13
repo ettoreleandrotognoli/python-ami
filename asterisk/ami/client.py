@@ -125,7 +125,7 @@ class AMIClient(object):
         self.finished.set()
         try:
             self._socket.close()
-            self._thread.join()
+            self._thread.join(self._timeout)
         except:
             pass
 
