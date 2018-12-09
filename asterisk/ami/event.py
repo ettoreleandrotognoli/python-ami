@@ -64,7 +64,8 @@ class EventKeyParser(object):
         raise NotImplementedError()
 
 
-@Event.register_parser('ChanVariable', 'DestChanVariable')
+@Event.register_parser('ChanVariable', 'DestChanVariable', 'TargetChanVariable', 'OrigTransfererChanVariable', 
+                       'SecondTransfererChanVariable', 'TransfereeChanVariable', 'TransferTargetChanVariable')
 class KeyValueParser(EventKeyParser):
     def __call__(self, key, value):
         if key not in self.keys:
