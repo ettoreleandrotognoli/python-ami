@@ -312,6 +312,9 @@ class AutoReconnect(threading.Thread):
             if response is not None and not response.is_error():
                 self.on_reconnect(self._ami_client, response)
                 return True
+        except (BrokenPipeError):
+            self._ami_client.disconnect()
+            self.try_reconnect()
         except:
             pass
         return False
