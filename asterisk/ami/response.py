@@ -7,7 +7,7 @@ class Response(object):
     key_regex = re.compile('^[a-zA-Z0-9_\-]+$')
 
     @staticmethod
-    def read(response):
+    def read(response, ami_version):
         lines = response.splitlines()
         (key, value) = map(lambda s: s.strip(), lines[0].split(':', 1))
         if not key.lower() == 'response':
@@ -21,7 +21,10 @@ class Response(object):
                 (key, value) = line.split(':', 1)
                 if not Response.key_regex.match(key):
                     raise key
-                keys[key.strip()] = value.strip()
+                if key.strip() == 'Output' and int(ami_version[0]) >= 5:
+                    follows.append(value[1:])
+                else:
+                    keys[key.strip()] = value.strip()
             except:
                 follows.append(line)
                 break

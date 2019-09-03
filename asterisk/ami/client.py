@@ -206,7 +206,7 @@ class AMIClient(object):
 
     def fire_recv_pack(self, pack):
         if Response.match(pack):
-            response = Response.read(pack)
+            response = Response.read(pack, self._ami_version)
             self.fire_recv_reponse(response)
             return
         if Event.match(pack):
