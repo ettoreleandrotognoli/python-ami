@@ -26,8 +26,6 @@ Python AMI Client
     :target: https://www.codefactor.io/repository/github/ettoreleandrotognoli/python-ami
     :alt: CodeFactor
 
-A simple Python AMI client
-http://programandonoaquario.blogspot.com.br
 
 See the `code of conduct <CODE_OF_CONDUCT.md>`_.
 
