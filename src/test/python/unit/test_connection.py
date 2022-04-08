@@ -2,8 +2,8 @@ import time
 import unittest
 
 from asterisk.ami import AMIClient
-from mock_ami import AMIMock
-from tests.settings import login
+from unit.mock_ami import AMIMock
+from settings import login
 
 
 class ConnectionTest(unittest.TestCase):

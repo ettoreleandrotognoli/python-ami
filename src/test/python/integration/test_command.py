@@ -1,6 +1,6 @@
 import unittest
 from asterisk import ami
-from tests.settings import connection, login
+from settings import connection, login
 
 
 class CommandTest(unittest.TestCase):

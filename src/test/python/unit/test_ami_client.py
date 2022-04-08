@@ -1,7 +1,7 @@
 import unittest
 
 from asterisk import ami
-from tests.settings import connection
+from settings import connection
 
 
 class AMIClientTest(unittest.TestCase):
