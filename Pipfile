@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+rx = "==1.6"
+coverage = "*"
+twine = "*"
+autopep8 = "*"
+
+[requires]
+python_version = "3.9"
+
+
+[scripts]
+test = "python -m unittest discover -s src/test/python/unit"
+coverage = "coverage run --source src/main/python -m unittest discover -s src/test/python/unit"
+coverage-report = "coverage report --fail-under=80"
+coverage-html-report = "coverage html"
+coverage-xml-report = "coverage xml"
+twine-upload = "twine upload dist/*"

@@ -8,3 +8,5 @@ coverage.xml
 \.*
 !.gitignore
 !.travis.yml
+!.github
+!.env
