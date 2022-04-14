@@ -17,6 +17,7 @@ python_version = "3.9"
 
 [scripts]
 test = "python -m unittest discover -s src/test/python/unit"
+integration-tests = "python -m unittest discover -s src/test/python/integration"
 coverage = "coverage run --source src/main/python -m unittest discover -s src/test/python/unit"
 coverage-report = "coverage report --fail-under=80"
 coverage-html-report = "coverage html"
