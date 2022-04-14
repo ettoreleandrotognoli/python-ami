@@ -1,9 +1,11 @@
+import os
+
 connection = {
-    'address': '127.0.0.1',
-    'port': 5038
+    'address': os.environ.get('AMI_HOST', '127.0.0.1'),
+    'port': int(os.environ.get('AMI_PORT', '5038')),
 }
 
 login = {
-    'username': 'admin',
-    'secret': 'password'
+    'username': os.environ.get('AMI_USER', 'admin'),
+    'secret': os.environ.get('AMI_SECRET', 'password'),
 }
