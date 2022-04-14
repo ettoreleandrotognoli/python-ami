@@ -19,7 +19,6 @@ if future.response.is_error():
 client.add_event_listener(EventListener(on_event=event_notification, white_list='Newstate', ChannelStateDesc='Ringing'))
 
 try:
-    while True:
-        time.sleep(10)
+    client.wait()
 except (KeyboardInterrupt, SystemExit):
     client.logoff()

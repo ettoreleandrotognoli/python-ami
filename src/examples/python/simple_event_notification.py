@@ -18,7 +18,6 @@ if future.response.is_error():
 client.add_event_listener(event_notification)
 
 try:
-    while True:
-        time.sleep(10)
+    client.wait()
 except (KeyboardInterrupt, SystemExit):
     client.logoff()

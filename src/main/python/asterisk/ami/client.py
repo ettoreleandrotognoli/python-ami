@@ -238,6 +238,9 @@ class AMIClient(object):
     def remove_event_listener(self, event_listener):
         self._event_listeners.remove(event_listener)
 
+    def wait(self):
+        self._thread.join()
+
 
 class AMIClientAdapter(object):
     def __init__(self, ami_client):
