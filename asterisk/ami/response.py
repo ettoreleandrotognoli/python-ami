@@ -70,9 +70,10 @@ class FutureResponse(object):
             self._lock.release()
 
     def get_response(self):
-        if self._response is not None:
-            return self._response
         self._lock.acquire()
+        if self._response is not None:
+            self._lock.release()
+            return self._response
         self._lock.wait(self._timeout)
         self._lock.release()
         return self._response
