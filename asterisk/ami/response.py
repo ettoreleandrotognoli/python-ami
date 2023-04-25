@@ -17,11 +17,17 @@ class Response(object):
         follows = []
         keys_and_follows = iter(lines[1:])
         for line in keys_and_follows:
+            if not line:
+                continue
             try:
                 (key, value) = line.split(':', 1)
                 if not Response.key_regex.match(key):
                     raise key
-                keys[key.strip()] = value.strip()
+                k = key.strip()
+                if k in keys:
+                    keys[k] += f"\n{value.strip()}"
+                else:
+                    keys[k] = value.strip()
             except:
                 follows.append(line)
                 break
