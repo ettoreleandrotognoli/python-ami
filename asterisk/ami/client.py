@@ -49,7 +49,7 @@ class AMIClientListener(object):
 
 
 class AMIClient(object):
-    asterisk_start_regex = re.compile('^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
+    asterisk_start_regex = re.compile(r'^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
     asterisk_line_regex = re.compile(b'\r\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile(b'\r\n\r\n', re.IGNORECASE | re.MULTILINE)
 
