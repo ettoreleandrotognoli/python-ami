@@ -4,7 +4,7 @@ import threading
 
 class Response(object):
     match_regex = re.compile('^Response: .*', re.IGNORECASE)
-    key_regex = re.compile('^[a-zA-Z0-9_\-]+$')
+    key_regex = re.compile(r'^[a-zA-Z0-9_\-]+$')
 
     @staticmethod
     def read(response):
