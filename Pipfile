@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+rx = "==1.6"
+twine = "*"
+build = "*"
+
+[requires]
+python_version = "3.11"

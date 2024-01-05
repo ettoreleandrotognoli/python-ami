@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "asterisk-ami"
+dynamic = ["version", "readme"]
+authors = [
+    { name = "Ettore Leandro Tognoli", email = "ettore.leandro.tognoli@gmail.com" },
+]
+description = "Python AMI Client"
+keywords = ["asterisk", "ami"]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: BSD License",
+]
+dependencies = []
+
+[project.optional-dependencies]
+tests = ["rx", "coverage"]
+
+[project.urls]
+"Homepage" = "https://github.com/ettoreleandrotognoli/python-ami"
+"Bug Tracker" = "https://github.com/ettoreleandrotognoli/python-ami/issues"
+
+
+[tool.setuptools]
+packages = ["asterisk"]
+
+[tool.setuptools.dynamic]
+version = { attr = "asterisk.__version__" }
+readme = { file = ["README.rst"] }
