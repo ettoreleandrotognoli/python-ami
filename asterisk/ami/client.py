@@ -52,6 +52,16 @@ class AMIClient(object):
     asterisk_start_regex = re.compile(r'^Asterisk *Call *Manager/(?P<version>([0-9]+\.)*[0-9]+)', re.IGNORECASE)
     asterisk_line_regex = re.compile(b'\r\n', re.IGNORECASE | re.MULTILINE)
     asterisk_pack_regex = re.compile(b'\r\n\r\n', re.IGNORECASE | re.MULTILINE)
+    # EventList start pattern
+    asterisk_start_list_regex = re.compile(
+        b'^Response: Success\r\nActionID: \d+\r\nEventList: start',
+        re.IGNORECASE | re.MULTILINE
+    )
+    # EventList end pattern
+    asterisk_end_list_regex = re.compile(
+        b'EventList: Complete\r\n.+\r\n.+\r\n\r\n',
+        re.IGNORECASE | re.MULTILINE
+    )
 
     def __init__(self, address='127.0.0.1', port=5038,
                  encoding='utf-8', encoding_errors='replace',
@@ -161,9 +171,20 @@ class AMIClient(object):
                 yield self._decode_pack(pack)
                 break
         while not self.finished.is_set():
-            while self.asterisk_pack_regex.search(data):
+            is_list = self.asterisk_start_list_regex.match(data)
+            list_ends = self.asterisk_end_list_regex.search(data)
+            # If data has complete EventList even, get and yield it
+            if is_list and list_ends:
+                ending = list_ends.group()
+                (pack, data) = self.asterisk_end_list_regex.split(data, 1)
+                yield self._decode_pack(pack + ending)
+            # If data has Event divider CLRFCLRF and it is not EventList
+            # (has to starts with EventList start pattern
+            # get anf yield it
+            elif not is_list and self.asterisk_pack_regex.search(data):
                 (pack, data) = self.asterisk_pack_regex.split(data, 1)
                 yield self._decode_pack(pack)
+            # Read the data
             recv = self._socket.recv(self._buffer_size)
             if recv == b'':
                 self.finished.set()
